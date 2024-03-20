@@ -1,4 +1,4 @@
-import { Box, Button, Chip, Typography, TextField } from "@mui/material";
+import { Box, Button, Chip, Typography, OutlinedInput } from "@mui/material";
 import Header from "../../components/Header/Header";
 import { useEffect, useState } from "react";
 import {
@@ -11,11 +11,13 @@ import {
   off,
 } from "firebase/database";
 import DeleteIcon from "@mui/icons-material/Delete";
-import AddCircleOutlineRoundedIcon from "@mui/icons-material/AddCircleOutlineRounded";
-
+import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
+import EditRoundedIcon from "@mui/icons-material/EditRounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
 export default function Register() {
   const [databaseData, setDatabaseData] = useState(null);
   const [edit, setEdit] = useState(false);
+  const [createCategory, setCreateCategory] = useState(false);
   const [editedCategoryName, setEditedCategoryName] = useState("");
   const [newItemValue, setNewItemValue] = useState("");
   const [addNewItem, setAddNewItem] = useState(false);
@@ -57,12 +59,12 @@ export default function Register() {
 
   const handleEdit = (category) => {
     setEdit(true);
+    setCreateCategory(true);
     setEditedCategoryName(category);
     setEditedCategoryNewName(category);
   };
 
   const handleSave = async () => {
-    setEdit(false);
     const db = getDatabase();
     try {
       if (editedCategoryNewName.trim() === "") {
@@ -72,7 +74,6 @@ export default function Register() {
           if (snapshot.exists()) {
             console.log("A categoria já existe:", editedCategoryName);
           } else {
-            // Adicionamos a nova categoria ao banco de dados
             await set(categoryRef, [editedCategoryName]);
             console.log("Nova categoria adicionada:", editedCategoryName);
           }
@@ -99,8 +100,46 @@ export default function Register() {
           console.log("Os nomes da categoria não podem ser vazios.");
         }
       }
+
       setEditedCategoryName("");
       setEditedCategoryNewName("");
+      setEdit(false);
+      setCreateCategory(false);
+    } catch (error) {
+      console.error("Erro ao salvar categoria:", error);
+    }
+  };
+  const handleEditSave = async () => {
+    const db = getDatabase();
+    try {
+      if (
+        editedCategoryName.trim() !== "" &&
+        editedCategoryNewName.trim() !== ""
+      ) {
+        // Obtém os dados da categoria a ser editada
+        const categoryData = databaseData[editedCategoryName] || [];
+
+        // Remove a categoria antiga
+        await set(ref(db, `${editedCategoryName}`), null);
+
+        // Adiciona a categoria com o novo nome e os dados antigos
+        await set(ref(db, `${editedCategoryNewName}`), categoryData);
+
+        console.log(
+          "Categoria atualizada:",
+          editedCategoryName,
+          "para",
+          editedCategoryNewName
+        );
+
+        // Reinicia os estados após salvar
+        setEdit(false);
+        setCreateCategory(false);
+        setEditedCategoryName("");
+        setEditedCategoryNewName("");
+      } else {
+        console.log("Os nomes da categoria não podem ser vazios.");
+      }
     } catch (error) {
       console.error("Erro ao salvar categoria:", error);
     }
@@ -144,7 +183,7 @@ export default function Register() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            justifyContent: "space-between",
+            justifyContent: "flex-start",
             width: "95%",
             height: "10rem",
             background: "#1E2C39",
@@ -158,87 +197,93 @@ export default function Register() {
               display: "flex",
               flexDirection: "row",
               alignItems: "center",
-              justifyContent: "flex-start",
+              justifyContent: "space-between",
               width: "95%",
               borderBottom: "1px #FFFFFF solid",
             }}
           >
             <Typography color={"#FFFFFF"}>Categoria</Typography>
+            <AddRoundedIcon
+              style={{ color: "#FFFFFF" }}
+              onClick={() => setCreateCategory(true)}
+            />
           </Box>
           <Box
             sx={{
+              pt: "1rem",
+              overflow: "auto",
               display: "flex",
               flexDirection: "row",
               alignItems: "center",
-              justifyContent: "space-around",
+              justifyContent: "flex-start",
               flexWrap: "wrap",
               width: "95%",
             }}
           >
-            {databaseData &&
-              Object.keys(databaseData).map((category) => (
-                <Chip
-                  sx={{ color: "#FFFFFF", margin: "4px" }}
-                  key={category}
-                  label={category}
-                  onDelete={() => handleDelete(category)}
-                  deleteIcon={<DeleteIcon style={{ color: "red" }} />}
-                  variant="outlined"
-                  onClick={() => handleEdit(category)}
-                />
-              ))}
-          </Box>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "flex-end",
-              width: "95%",
-            }}
-          >
-            {!edit ? (
-              <Button
-                variant="outlined"
-                sx={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 2,
-                  color: "#FFFFFF",
-                  borderColor: "#FFFFFF",
-                }}
-                onClick={() => setEdit(true)}
-              >
-                Editar categoria
-                <AddCircleOutlineRoundedIcon />
-              </Button>
-            ) : (
+            {createCategory === true && edit === false ? (
               <>
-                <TextField
+                <OutlinedInput
                   value={editedCategoryName}
                   onChange={(e) => setEditedCategoryName(e.target.value)}
-                  variant="outlined"
-                  label="Nome da Categoria"
-                  sx={{ mr: 2 }}
                 />
-
                 <Button
                   variant="outlined"
-                  sx={{
-                    display: "flex",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 2,
-                    color: "#FFFFFF",
-                    borderColor: "#FFFFFF",
-                  }}
-                  onClick={handleSave}
+                  sx={{ color: "#FFFFFF", borderColor: "#FFFFFF" }}
+                  onClick={() => handleSave()}
                 >
-                  Salvar alterações
-                  <AddCircleOutlineRoundedIcon />
+                  Adicionar
+                  <CheckRoundedIcon />
                 </Button>
               </>
+            ) : (
+              <>
+                {databaseData &&
+                  Object.keys(databaseData).map((category) => (
+                    <Chip
+                      sx={{
+                        color: "#FFFFFF",
+                        margin: "4px",
+                        gap: "0.8rem",
+                        p: "1rem",
+                      }}
+                      key={category}
+                      label={category}
+                      icon={
+                        <>
+                          <DeleteIcon
+                            style={{ color: "red" }}
+                            onClick={() => handleDelete(category)}
+                          />
+                          <EditRoundedIcon
+                            style={{ color: "#FFFFFF", cursor: "pointer" }}
+                            onClick={() => handleEdit(category)}
+                          />
+                        </>
+                      }
+                      variant="outlined"
+                    />
+                  ))}
+              </>
+            )}
+            {edit === true ? (
+              <>
+                <>
+                  <OutlinedInput
+                    value={editedCategoryNewName}
+                    onChange={(e) => setEditedCategoryNewName(e.target.value)}
+                  />
+                  <Button
+                    variant="outlined"
+                    sx={{ color: "#FFFFFF", borderColor: "#FFFFFF" }}
+                    onClick={() => handleEditSave()}
+                  >
+                    Alterar
+                    <CheckRoundedIcon />
+                  </Button>
+                </>
+              </>
+            ) : (
+              <></>
             )}
           </Box>
         </Box>
@@ -274,7 +319,6 @@ export default function Register() {
                     </Typography>
                     <Typography>Ingredientes: {item.ingredientes}</Typography>
                     <Typography>Valor: R${item.valor}</Typography>
-                    {/* Adicione aqui qualquer lógica adicional específica para cada categoria */}
                   </Box>
                 ))
               ) : (
@@ -282,7 +326,7 @@ export default function Register() {
               )}
               {addNewItem && (
                 <Box>
-                  <TextField
+                  <OutlinedInput
                     value={newItemValue}
                     onChange={(e) => setNewItemValue(e.target.value)}
                     variant="outlined"
@@ -301,16 +345,15 @@ export default function Register() {
   );
 }
 
-// Função para retornar a cor de fundo com base na categoria
 function getCategoryBackgroundColor(category) {
   switch (category) {
     case "drinks":
       return "lightblue";
     case "hamburger":
       return "blue";
-    // Adicione mais casos conforme necessário para outras categorias
+
     default:
-      return "red"; // Padrão para outras categorias
+      return "red";
   }
 }
 function teste(category) {
@@ -319,9 +362,9 @@ function teste(category) {
       return "5rem";
     case "hamburger":
       return "5rem";
-    // Adicione mais casos conforme necessário para outras categorias
+
     default:
-      return "red"; // Padrão para outras categorias
+      return "red";
   }
 }
 function overflow(category) {
@@ -330,8 +373,8 @@ function overflow(category) {
       return "auto";
     case "hamburger":
       return "auto";
-    // Adicione mais casos conforme necessário para outras categorias
+
     default:
-      return "auto"; // Padrão para outras categorias
+      return "auto";
   }
 }

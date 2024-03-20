@@ -42,7 +42,7 @@
 #sectionsmenu .tabs {
   width: 25%;
   color: #29292c !important;
-  border-radius: 25px !important;
+  border-radius: 15px !important;
   border: 1px #f76d26 solid;
   margin-right: 5px;
   margin-left: 5px;
@@ -158,7 +158,7 @@
   padding: 10.5px 14px !important;
   padding-left: 2.8rem !important;
 }
-fieldset {
+.input fieldset {
   border-radius: 15px !important;
   box-shadow: 4px 5px 9px 0px rgba(0, 0, 0, 0.75);
   border-color: #f46c26 !important;
