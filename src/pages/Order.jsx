@@ -24,10 +24,11 @@ import { useCarrinho } from "../context/useCarrinho";
 import { useFormat } from "../utils/useFormat";
 
 import "./Order.css";
+import { useColor } from "../context/useContextColor";
 
 const Order = () => {
   const [isEntrega, setIsEntrega] = useState(undefined);
-
+  const { color } = useColor();
   const campoObrigatorio = (
     <Typography variant="caption" style={{ color: "red", marginLeft: "5px" }}>
       Campo obrigatório
@@ -134,7 +135,7 @@ const Order = () => {
         } catch (error) {
           console.error("Erro ao salvar os dados:", error);
         }
-      } 
+      }
     }
   };
 
@@ -142,7 +143,7 @@ const Order = () => {
     if (isValid) {
       // eslint-disable-next-line no-undef
       setOpen(true);
-    } 
+    }
   };
   const handleCloseModal = () => {
     setIsChangeNeeded(false);
@@ -307,8 +308,6 @@ const Order = () => {
         message += `Troco para: ${changeAmount}\n\n`;
       }
 
-   
-
       const encodedMessage = encodeURIComponent(message);
       const whatsappLink = `https://wa.me/5585982168756?text=${encodedMessage}`;
       window.open(whatsappLink);
@@ -417,13 +416,13 @@ const Order = () => {
         position: "relative",
         height: "100dvh",
         width: "100%",
-        backgroundColor: "#f46c26",
+        backgroundColor: color,
       }}
     >
       <form onSubmit={handleSubmit(handleFormSubmit)}>
         <Box className="headerOrder">
           <Box className="iconAndText">
-            <NavLink to="/" style={{ color: "#f9e9df" }}>
+            <NavLink to="/" style={{ color: "#FFFFFF" }}>
               <ArrowBackIcon />
             </NavLink>
             <Typography variant="h6">Checkout</Typography>
@@ -451,7 +450,7 @@ const Order = () => {
                   paddingRight: "5%",
                   alignItems: "center",
                   width: "100%",
-                  color: " #f9e9df",
+                  color: " #FFFFFF",
                   borderBottom: "1px #070707 solid",
                   zIndex: "1",
                 }}
@@ -472,7 +471,7 @@ const Order = () => {
                     <InputMask
                       style={{
                         textTransform: "capitalize",
-                        border: "1px #f16d2f solid",
+                        border: `1px ${color} solid`,
                         borderRadius: "8px",
                         paddingLeft: ".5rem",
                         fontFamily: "Roboto",
@@ -505,7 +504,7 @@ const Order = () => {
                     <input
                       style={{
                         textTransform: "capitalize",
-                        border: "1px #f16d2f solid",
+                        border: `1px ${color} solid`,
                         borderRadius: "8px",
                         paddingLeft: ".5rem",
                         fontFamily: "Roboto",
@@ -554,7 +553,7 @@ const Order = () => {
                   paddingRight: "5%",
                   alignItems: "center",
                   width: "100%",
-                  color: " #f9e9df",
+                  color: " #FFFFFF",
                   borderBottom: "1px #070707 solid",
                   zIndex: "1",
                 }}
@@ -662,7 +661,7 @@ const Order = () => {
                     <InputMask
                       style={{
                         textTransform: "capitalize",
-                        border: "1px #f16d2f solid",
+                        border: `1px ${color} solid`,
                         borderRadius: "8px",
                         paddingLeft: ".5rem",
                         fontFamily: "Roboto",
@@ -695,7 +694,7 @@ const Order = () => {
                     <input
                       style={{
                         textTransform: "capitalize",
-                        border: "1px #f16d2f solid",
+                        border: `1px ${color} solid`,
                         borderRadius: "8px",
                         paddingLeft: ".5rem",
                         fontFamily: "Roboto",
@@ -723,7 +722,7 @@ const Order = () => {
                     <input
                       style={{
                         textTransform: "capitalize",
-                        border: "1px #f16d2f solid",
+                        border: `1px ${color} solid`,
                         borderRadius: "8px",
                         paddingLeft: ".5rem",
                         fontFamily: "Roboto",
@@ -749,7 +748,7 @@ const Order = () => {
                     <input
                       style={{
                         textTransform: "capitalize",
-                        border: "1px #f16d2f solid",
+                        border: `1px ${color} solid`,
                         borderRadius: "8px",
                         paddingLeft: ".5rem",
                         fontFamily: "Roboto",
@@ -774,7 +773,7 @@ const Order = () => {
                     <input
                       style={{
                         textTransform: "capitalize",
-                        border: "1px #f16d2f solid",
+                        border: `1px ${color} solid`,
                         borderRadius: "8px",
                         paddingLeft: ".5rem",
                         fontFamily: "Roboto",
@@ -803,7 +802,7 @@ const Order = () => {
                     <input
                       style={{
                         textTransform: "capitalize",
-                        border: "1px #f16d2f solid",
+                        border: `1px ${color} solid`,
                         borderRadius: "8px",
                         paddingLeft: ".5rem",
                         fontFamily: "Roboto",
@@ -831,7 +830,7 @@ const Order = () => {
                     <input
                       style={{
                         textTransform: "capitalize",
-                        border: "1px #f16d2f solid",
+                        border: `1px ${color} solid`,
                         borderRadius: "8px",
                         paddingLeft: ".5rem",
                         fontFamily: "Roboto",
@@ -881,7 +880,7 @@ const Order = () => {
                   paddingRight: "5%",
                   alignItems: "center",
                   width: "100%",
-                  color: " #f9e9df",
+                  color: " #FFFFFF",
                   borderBottom: "1px #070707 solid",
                   zIndex: "1",
                 }}
@@ -1034,7 +1033,7 @@ const Order = () => {
             </Box>
           </Box>
 
-          <Box className="totalPurchase">
+          <Box className="totalPurchase" sx={{ background: color }}>
             <Box className="contentTotalPurchase">
               <Box
                 sx={{
@@ -1062,9 +1061,9 @@ const Order = () => {
                   fontFamily: "Roboto",
                   height: "3rem",
                   minHeight: "3rem",
-                  border: "1px solid #f46c26",
+                  border: `1px solid ${color}`,
                   borderRadius: "10px",
-                  color: "#f16d2f",
+                  color: color,
                   minWidth: "50%",
                   textDecoration: "none",
                   transition: "background-color 0.3s",
@@ -1092,7 +1091,7 @@ const Order = () => {
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "space-evenly",
-              backgroundColor: "#fae9de",
+              backgroundColor: "#FFFFFF",
               position: " absolute",
               top: " 50%",
               left: "50%",
@@ -1101,7 +1100,7 @@ const Order = () => {
               maxWidth: "600px",
               height: "15rem",
               minHeight: " 100px",
-              border: "6px solid #e5c7b3",
+              border: `6px solid ${color}`,
               borderRadius: " 30px",
               boxShadow: "5px 4px 5px 2px rgba(0, 0, 0, 0.2)",
             }}
@@ -1125,7 +1124,7 @@ const Order = () => {
                   mask="R$ 999"
                   maskChar={null}
                   style={{
-                    border: "1px #f46c26 solid",
+                    border: `1px ${color} solid`,
                     height: "2rem",
                     borderRadius: "5px",
                     paddingLeft: "1rem",
@@ -1146,9 +1145,9 @@ const Order = () => {
                     className="click box-shadow"
                     style={{
                       textTransform: "uppercase",
-                      backgroundColor: "#f46c26",
+                      backgroundColor: color,
                       color: "white",
-                      border: "1px solid #f46c26",
+                      border: `1px solid ${color}`,
                       height: "2rem",
                       borderRadius: "5px",
                       fontFamily: "Roboto",
@@ -1163,9 +1162,9 @@ const Order = () => {
                     className="click box-shadow"
                     style={{
                       textTransform: "uppercase",
-                      backgroundColor: "#f46c26",
+                      backgroundColor: color,
                       color: "white",
-                      border: "1px solid #f46c26",
+                      border: `1px solid ${color}`,
                       height: "2rem",
                       borderRadius: "5px",
                       fontFamily: "Roboto",
@@ -1184,9 +1183,9 @@ const Order = () => {
                   className="click box-shadow"
                   style={{
                     textTransform: "uppercase",
-                    backgroundColor: "#f46c26",
+                    backgroundColor: color,
                     color: "white",
-                    border: "1px solid #f46c26",
+                    border: `1px solid ${color}`,
                     height: "2rem",
                     borderRadius: "5px",
                     fontFamily: "Roboto",
@@ -1201,9 +1200,9 @@ const Order = () => {
                   className="click box-shadow"
                   style={{
                     textTransform: "uppercase",
-                    backgroundColor: "#f46c26",
+                    backgroundColor: color,
                     color: "white",
-                    border: "1px solid #f46c26",
+                    border: `1px solid ${color}`,
                     height: "2rem",
                     borderRadius: "5px",
                     fontFamily: "Roboto",

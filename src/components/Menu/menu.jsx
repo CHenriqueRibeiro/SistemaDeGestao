@@ -25,6 +25,7 @@ import "./menu.css";
 import { useCarrinho } from "../../context/useCarrinho";
 import { useFormat } from "./../../utils/useFormat";
 import Cart from "../Cart/cart";
+import { useColor } from "../../context/useContextColor";
 
 const schema = Yup.object().shape({
   refrigeranteDoCombo: Yup.string()
@@ -57,7 +58,23 @@ CustomTabPanel.propTypes = {
 export default function Menu() {
   function renderCards(data) {
     return data.map((item) => (
-      <Card key={item.id} className="cardMenu">
+      <Card
+        key={item.id}
+        className="box-shadow"
+        sx={{
+          position: "relative",
+          display: "flex",
+          backgroundColor: "#FFFFFF ",
+          height: "11rem",
+          maxWidth: "580px",
+          justifyContent: "flex-start",
+          flexDirection: "row",
+          alignItems: "center",
+          borderRadius: "29px",
+          border: `5px solid ${color}`,
+          margin: "5px 0 10px 0",
+        }}
+      >
         <CardContent className="cardContent">
           <img src={item.imagem} alt="" />
           <Box className="descriptionCard">
@@ -73,9 +90,25 @@ export default function Menu() {
               </Typography>
             </Box>
             <Typography>{item.ingredientes}</Typography>
-            <Box className="priceAndIcons">
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                width: "94%",
+              }}
+            >
               <Typography variant="h6">{useFormat(item.valor)}</Typography>
               <AddShoppingCartIcon
+                sx={{
+                  width: "35%",
+                  height: "35px",
+                  borderRadius: "10px",
+                  padding: "2px",
+                  backgroundColor: color,
+                  cursor: "pointer",
+                }}
                 className="iconAddProduct click"
                 onClick={() => openConfirmationModal(item)}
               />
@@ -100,8 +133,8 @@ export default function Menu() {
   const [categories, setCategories] = useState([]);
   const [refrigeranteError, setRefrigeranteError] = useState("");
   const [bordaOptions, setBordaOptions] = useState([]);
-
   const [firebaseData, setFirebaseData] = useState({});
+  const { color } = useColor();
   useEffect(() => {
     fetch(`https://testeapp-666bc-default-rtdb.firebaseio.com/.json`)
       .then((response) => response.json())
@@ -311,6 +344,9 @@ export default function Menu() {
             key={index}
             label={categoria}
             className={`tabs opt${categoria.toLowerCase()}`}
+            sx={{
+              border: `1px ${color} solid`,
+            }}
           />
         ))}
       </Tabs>
@@ -324,19 +360,39 @@ export default function Menu() {
           justifyContent: "flex-end",
           width: "95%",
           maxWidth: "574px",
-          background: "#f9e9df",
+          background: "#FFFFFF",
           position: "relative",
           zIndex: "3",
           top: "0",
           borderRadius: "15px",
         }}
       >
-        <SearchIcon className="iconSearchFilterMenu" />
+        <SearchIcon
+          sx={{
+            position: "absolute",
+            left: "0.8rem",
+            top: "0.7rem",
+            color: color,
+            justifyContent: "center",
+            flexWrap: "nowrap",
+            flexDirection: "column",
+          }}
+        />
         <TextField
-          className="input"
+          className="box-shadow"
           label="Ta com fome de quê?"
           variant="outlined"
           onChange={handleSearchInputChange}
+          sx={{
+            borderColor: color,
+            "& fieldset": {
+              borderRadius: "15px",
+              borderColor: color,
+            },
+            "& focus": {
+              borderColor: color,
+            },
+          }}
         />
       </Box>
       <Box
@@ -415,7 +471,7 @@ export default function Menu() {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "space-evenly",
-            backgroundColor: "#fae9de",
+            backgroundColor: "#FFFFFF",
             position: " absolute",
             top: " 50%",
             left: "50%",
@@ -424,7 +480,7 @@ export default function Menu() {
             maxWidth: "600px",
             height: "15rem",
             minHeight: " 100px",
-            border: "6px solid #e5c7b3",
+            border: `6px solid ${color}`,
             borderRadius: " 30px",
             boxShadow: "5px 4px 5px 2px rgba(0, 0, 0, 0.2)",
           }}
@@ -489,10 +545,10 @@ export default function Menu() {
                   className="click box-shadow"
                   sx={{
                     width: "30%",
-                    backgroundColor: "#f76d26 ",
-                    color: "#f7e9e1",
+                    backgroundColor: color,
+                    color: "#FFFFFF",
                     "&:hover": {
-                      backgroundColor: "#f76d26",
+                      backgroundColor: color,
                     },
                   }}
                   onClick={() => setIsModalOpen(false)}
@@ -503,10 +559,10 @@ export default function Menu() {
                   className="click box-shadow"
                   sx={{
                     width: "30%",
-                    backgroundColor: "#f76d26",
-                    color: "#f7e9e1",
+                    backgroundColor: color,
+                    color: "#FFFFFF",
                     "&:hover": {
-                      backgroundColor: "#f76d26",
+                      backgroundColor: color,
                     },
                   }}
                   onClick={() => {
@@ -543,7 +599,7 @@ export default function Menu() {
             flexDirection: "column",
             alignItems: "flex-start",
             justifyContent: "space-evenly",
-            backgroundColor: "#fae9de",
+            backgroundColor: "#FFFFFF",
             position: " absolute",
             top: " 50%",
             left: "50%",
@@ -552,7 +608,7 @@ export default function Menu() {
             maxWidth: "600px",
             height: "70%",
             minHeight: "32rem",
-            border: "6px solid #e5c7b3",
+            border: `6px solid ${color}`,
             borderRadius: " 30px",
             boxShadow: "5px 4px 5px 2px rgba(0, 0, 0, 0.2)",
           }}
@@ -712,13 +768,13 @@ export default function Menu() {
               sx={{
                 height: "100%",
                 width: "30%",
-                backgroundColor: "#f76d26 ",
-                color: "#f7e9e1",
+                backgroundColor: color,
+                color: "#FFFFFF",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 "&:hover": {
-                  backgroundColor: "#f76d26",
+                  backgroundColor: color,
                 },
               }}
               onClick={() => setIsSegundoModalOpen(false)}
@@ -730,13 +786,13 @@ export default function Menu() {
               sx={{
                 height: "100%",
                 width: "50%",
-                backgroundColor: "#f76d26",
-                color: "#f7e9e1",
+                backgroundColor: color,
+                color: "#FFFFFF",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 "&:hover": {
-                  backgroundColor: "#f76d26",
+                  backgroundColor: color,
                 },
               }}
               onClick={() => {

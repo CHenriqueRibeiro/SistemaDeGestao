@@ -26,7 +26,7 @@ import { useFormat } from "../../../../utils/useFormat";
 import Header from "../../components/Header/Header";
 import EditIcon from "@mui/icons-material/Edit";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
-import { app } from "../../../../Firebase/firebase"; 
+import { app } from "../../../../Firebase/firebase";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 const firestore = getFirestore(app);
 
@@ -588,7 +588,6 @@ export const Tables = () => {
                               (adicionalItem, adicionalIndex) => (
                                 // eslint-disable-next-line react/jsx-key
                                 <Typography key={adicionalIndex}>
-                                  {" "}
                                   <span
                                     style={{
                                       fontWeight: "400",

@@ -1,20 +1,23 @@
-import '@fontsource/roboto/300.css';
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
-import './app.css';
-import Container from '@mui/material/Container';
-import { Outlet } from 'react-router-dom';
-import { CarrinhoProvider } from './context/useCarrinho';
-import { CartProvider } from './context/useContextMesas';
+import "@fontsource/roboto/300.css";
+import "@fontsource/roboto/400.css";
+import "@fontsource/roboto/500.css";
+import "@fontsource/roboto/700.css";
+import "./app.css";
+import Container from "@mui/material/Container";
+import { Outlet } from "react-router-dom";
+import { CarrinhoProvider } from "./context/useCarrinho";
+import { CartProvider } from "./context/useContextMesas";
+import { ColorProvider } from "./context/useContextColor";
 
 export default function App() {
   return (
     <Container id="app" maxWidth="sm">
       <CartProvider>
-      <CarrinhoProvider>
-        <Outlet />
-      </CarrinhoProvider>
+        <CarrinhoProvider>
+          <ColorProvider>
+            <Outlet />
+          </ColorProvider>
+        </CarrinhoProvider>
       </CartProvider>
     </Container>
   );

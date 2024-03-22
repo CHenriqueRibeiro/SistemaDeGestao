@@ -15,6 +15,7 @@ import { useFormat } from "../../utils/useFormat";
 import { NavLink } from "react-router-dom";
 
 import "./cart.css";
+import { useColor } from "../../context/useContextColor";
 
 export default function Cart() {
   const [value, setValue] = useState(0);
@@ -22,7 +23,7 @@ export default function Cart() {
   const [openModalCarrinho, setOpenModalCarrinho] = useState(false);
 
   const { cart, calculateSubtotal, clearCart } = useCarrinho();
-
+  const { color } = useColor();
   const openListItems = () => {
     const addproducts = document.getElementById("displayItems");
     addproducts.classList.toggle("displayItemson");
@@ -36,10 +37,10 @@ export default function Cart() {
 
   return (
     <>
-      <Box id="displayItems">
+      <Box id="displayItems" sx={{ backgroundColor: color }}>
         <Box
           sx={{
-            backgroundColor: "#f76d26",
+            backgroundColor: color,
             overflow: "hidden",
             width: "100%",
             height: "4rem",
@@ -58,10 +59,10 @@ export default function Cart() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: "#fb6c1a",
-              border: "1px #fae9de solid",
+              backgroundColor: color,
+              border: "1px #FFFFFF solid",
               borderRadius: "8px",
-              color: "#fae9de",
+              color: "#FFFFFF",
               height: "75%",
             }}
             onClick={clearCart}
@@ -83,7 +84,7 @@ export default function Cart() {
         >
           <Box
             sx={{
-              color: "#f76d26",
+              color: color,
               height: "4.9rem",
               width: "100%",
               display: "flex",
@@ -98,8 +99,8 @@ export default function Cart() {
               className="sumPriceCart "
               variant="h6"
               sx={{
-                backgroundColor: "#fae9de",
-                color: "#f76d26",
+                backgroundColor: "#FFFFFF",
+                color: color,
                 height: "3.9rem",
                 width: "8rem",
                 display: "flex",
@@ -143,10 +144,10 @@ export default function Cart() {
               sx={{
                 bottom: "-4rem",
                 position: "absolute",
-                color: "#f7e9e1",
-                backgroundColor: "red",
+                color: "#FFFFFF",
+                backgroundColor: color,
                 borderRadius: "13px",
-                border: "1px solid #fae9de",
+                border: "1px solid #FFFFFF",
                 boxShadow:
                   "5px 4px 5px 2px rgba(0, 0, 0, 0.2), 5px 4px 5px 2px rgba(0, 0, 0, 0.14), 5px 4px 5px 2px rgba(0, 0, 0, 0.12)",
               }}
@@ -197,7 +198,7 @@ export default function Cart() {
                             flexDirection: "column",
                             alignItems: "center",
                             justifyContent: "center",
-                            backgroundColor: "#fae9de",
+                            backgroundColor: "#FFFFFF",
                             position: " absolute",
                             top: " 50%",
                             left: "50%",
@@ -206,7 +207,7 @@ export default function Cart() {
                             maxWidth: "600px",
                             height: "5%",
                             minHeight: " 100px",
-                            border: "6px solid #e5c7b3",
+                            border: `6px solid ${color}`,
                             borderRadius: " 30px",
                             boxShadow: "5px 4px 5px 2px rgba(0, 0, 0, 0.2)",
                           }}
@@ -224,9 +225,9 @@ export default function Cart() {
                   </>
                 ) : (
                   <ShoppingCartOutlinedIcon
-                      className="iconsfooter"
-                      onClick={openListItems}
-                    />
+                    className="iconsfooter"
+                    onClick={openListItems}
+                  />
                 )}
                 {cart.length > 0 ? (
                   <Box

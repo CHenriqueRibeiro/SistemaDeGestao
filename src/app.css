@@ -7,13 +7,13 @@
   display: flex;
   justify-content: center;
   height: 100dvh;
-  background-color: #fae9de;
+  background-color: #FFFFFF;
   overflow: hidden;
   position: relative;
 }
 
 #app {
-  background-color: #fae9de;
+  background-color: #FFFFFF;
   margin: 0 auto;
   display: flex;
   flex-flow: column nowrap;
@@ -26,7 +26,7 @@
 }
 
 #content {
-  background-color: #fae9de;
+  background-color: #FFFFFF;
   width: 100%;
   height: 67%;
   overflow: hidden !important;

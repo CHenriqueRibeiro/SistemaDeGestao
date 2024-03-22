@@ -1,4 +1,18 @@
-import { Box, Button, Chip, Typography, OutlinedInput } from "@mui/material";
+import {
+  Box,
+  Button,
+  Chip,
+  Typography,
+  OutlinedInput,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  DialogActions,
+} from "@mui/material";
 import Header from "../../components/Header/Header";
 import { useEffect, useState } from "react";
 import {
@@ -14,6 +28,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import { BlockPicker } from "react-color";
 export default function Register() {
   const [databaseData, setDatabaseData] = useState(null);
   const [edit, setEdit] = useState(false);
@@ -22,27 +37,50 @@ export default function Register() {
   const [newItemValue, setNewItemValue] = useState("");
   const [addNewItem, setAddNewItem] = useState(false);
   const [editedCategoryNewName, setEditedCategoryNewName] = useState("");
+  const [open, setOpen] = useState(false);
+  const [additionalDays, setAdditionalDays] = useState([]);
+  const [openColor, setOpenColor] = useState(false);
+  const [openPayment, setOpenPayment] = useState(false);
+  const [color, setColor] = useState("#ffffff");
+  const [selectedPayments, setSelectedPayments] = useState([]);
+
+  const handleData = (snapshot) => {
+    if (snapshot.exists()) {
+      setDatabaseData(snapshot.val());
+    } else {
+      console.log("Nenhum dado encontrado no banco de dados.");
+    }
+  };
+
+  const handleError = (error) => {
+    console.error("Erro ao buscar dados do banco de dados:", error);
+  };
 
   useEffect(() => {
     const db = getDatabase();
     const databaseRef = ref(db);
 
-    const handleData = (snapshot) => {
-      if (snapshot.exists()) {
-        setDatabaseData(snapshot.val());
-        console.log("Dados do banco de dados atualizados:", snapshot.val());
-      } else {
-        console.log("Nenhum dado encontrado no banco de dados.");
-      }
-    };
-
-    const handleError = (error) => {
-      console.error("Erro ao buscar dados do banco de dados:", error);
-    };
-
     onValue(databaseRef, handleData, handleError);
 
     return () => off(databaseRef, "value", handleData);
+  }, []);
+  useEffect(() => {
+    const db = getDatabase();
+    const databaseRef = ref(db, "horario_de_funcionamento");
+
+    onValue(databaseRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const days = Object.keys(data).map((day) => ({
+          day,
+          startTime: data[day].startTime,
+          endTime: data[day].endTime,
+        }));
+        setAdditionalDays(days);
+      }
+    });
+
+    return () => off(databaseRef);
   }, []);
 
   const handleDelete = async (category) => {
@@ -51,7 +89,6 @@ export default function Register() {
 
     try {
       await set(categoryRef, null);
-      console.log("Categoria e itens removidos com sucesso:", category);
     } catch (error) {
       console.error("Erro ao remover categoria e itens:", error);
     }
@@ -75,7 +112,6 @@ export default function Register() {
             console.log("A categoria já existe:", editedCategoryName);
           } else {
             await set(categoryRef, [editedCategoryName]);
-            console.log("Nova categoria adicionada:", editedCategoryName);
           }
         } else {
           console.log("O nome da categoria não pode ser vazio.");
@@ -90,12 +126,6 @@ export default function Register() {
             ref(db, `${editedCategoryNewName}`),
             databaseData[editedCategoryName]
           );
-          console.log(
-            "Categoria atualizada:",
-            editedCategoryName,
-            "para",
-            editedCategoryNewName
-          );
         } else {
           console.log("Os nomes da categoria não podem ser vazios.");
         }
@@ -109,6 +139,7 @@ export default function Register() {
       console.error("Erro ao salvar categoria:", error);
     }
   };
+
   const handleEditSave = async () => {
     const db = getDatabase();
     try {
@@ -116,23 +147,10 @@ export default function Register() {
         editedCategoryName.trim() !== "" &&
         editedCategoryNewName.trim() !== ""
       ) {
-        // Obtém os dados da categoria a ser editada
         const categoryData = databaseData[editedCategoryName] || [];
-
-        // Remove a categoria antiga
         await set(ref(db, `${editedCategoryName}`), null);
-
-        // Adiciona a categoria com o novo nome e os dados antigos
         await set(ref(db, `${editedCategoryNewName}`), categoryData);
 
-        console.log(
-          "Categoria atualizada:",
-          editedCategoryName,
-          "para",
-          editedCategoryNewName
-        );
-
-        // Reinicia os estados após salvar
         setEdit(false);
         setCreateCategory(false);
         setEditedCategoryName("");
@@ -155,12 +173,97 @@ export default function Register() {
           ref(db, `${editedCategoryNewName}`),
           databaseData[editedCategoryName]
         );
-        console.log("Novo item adicionado à categoria:", newItemValue);
         setNewItemValue("");
       } catch (error) {
         console.error("Erro ao adicionar novo item à categoria:", error);
       }
     }
+  };
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = (reason) => {
+    if (reason !== "backdropClick") {
+      setOpen(false);
+    }
+  };
+  const handleCloseColor = () => {
+    setOpenColor(false);
+  };
+  const handleClosePayment = () => {
+    setOpenPayment(false);
+  };
+
+  const handleAddDay = () => {
+    if (additionalDays.length >= 7) {
+      return;
+    }
+
+    setAdditionalDays([
+      ...additionalDays,
+      { day: "", startTime: "", endTime: "" },
+    ]);
+  };
+
+  const handleSaveSchedule = async () => {
+    const formattedSchedule = additionalDays.reduce((acc, day) => {
+      const { day: dayOfWeek, startTime, endTime } = day;
+      if (dayOfWeek && startTime && endTime) {
+        acc[dayOfWeek] = { startTime, endTime };
+      }
+      return acc;
+    }, {});
+
+    const db = getDatabase();
+    try {
+      await set(ref(db, "horario_de_funcionamento"), formattedSchedule);
+      setOpen(false);
+    } catch (error) {
+      console.error("Erro ao salvar o horário de funcionamento:", error);
+    }
+  };
+
+  const handleDayChange = (event, index) => {
+    const updatedDays = [...additionalDays];
+    updatedDays[index].day = event.target.value;
+    setAdditionalDays(updatedDays);
+  };
+
+  const handleStartTimeChange = (event, index) => {
+    const updatedDays = [...additionalDays];
+    updatedDays[index].startTime = event.target.value;
+    setAdditionalDays(updatedDays);
+  };
+
+  const handleEndTimeChange = (event, index) => {
+    const updatedDays = [...additionalDays];
+    updatedDays[index].endTime = event.target.value;
+    setAdditionalDays(updatedDays);
+  };
+  const handleDeleteDay = (index) => {
+    const updatedDays = [...additionalDays];
+    updatedDays.splice(index, 1);
+    setAdditionalDays(updatedDays);
+  };
+  const handleSavePaymentOptions = async () => {
+    const db = getDatabase();
+    try {
+      const paymentOptionsRef = ref(db, "formaDePagamentos");
+      await set(paymentOptionsRef, selectedPayments);
+      setOpenPayment(false);
+    } catch (error) {
+      console.error("Erro ao salvar as formas de pagamento:", error);
+    }
+  };
+  const handleSaveColor = () => {
+    setColor(color);
+
+    const db = getDatabase();
+    const colorRef = ref(db, "corsecundaria");
+    set(colorRef, [color]);
+
+    setOpenColor(false);
   };
 
   return (
@@ -177,6 +280,293 @@ export default function Register() {
         }}
       >
         <Header />
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "flex-start",
+            width: "95%",
+            height: "10rem",
+            background: "#1E2C39",
+            borderRadius: 3,
+            mt: 3,
+            mb: 3,
+            pt: 1,
+            pb: 1,
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              width: "95%",
+              borderBottom: "1px #FFFFFF solid",
+            }}
+          >
+            <Typography color={"#FFFFFF"}>Dados do estabelecimento</Typography>
+            <EditRoundedIcon
+              style={{ color: "#FFFFFF" }}
+              onClick={() => setCreateCategory(true)}
+            />
+          </Box>
+          <Box
+            sx={{
+              pt: "1rem",
+              overflow: "auto",
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "flex-start",
+              flexWrap: "wrap",
+              width: "95%",
+              height: "15rem",
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                width: "95%",
+              }}
+            >
+              <OutlinedInput
+                placeholder="Nome"
+                sx={{
+                  color: "#FFFFFF",
+                  "& fieldset": {
+                    borderColor: "#FFFFFF",
+                  },
+                }}
+              />
+              <OutlinedInput
+                placeholder="Telefone"
+                sx={{
+                  color: "#FFFFFF",
+                  "& fieldset": {
+                    borderColor: "#FFFFFF",
+                  },
+                }}
+              />
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                width: "95%",
+              }}
+            >
+              <Button
+                variant="outlined"
+                onClick={handleClickOpen}
+                sx={{
+                  color: "#FFFFFF",
+                  borderColor: "#FFFFFF",
+                  "& fieldset": {
+                    borderColor: "#FFFFFF",
+                  },
+                }}
+              >
+                Horario de funcionamento
+              </Button>
+              <Dialog disableEscapeKeyDown open={open} onClose={handleClose}>
+                <DialogTitle>Selecione o horário de funcionamento</DialogTitle>
+                <DialogContent>
+                  {additionalDays.map((day, index) => (
+                    <Box key={index}>
+                      <FormControl sx={{ m: 1, minWidth: 200 }}>
+                        <InputLabel id={`day-select-label-${index}`}>
+                          Dia {index + 1}
+                        </InputLabel>
+                        <Select
+                          labelId={`day-select-label-${index}`}
+                          id={`day-select-${index}`}
+                          value={day.day}
+                          onChange={(e) => handleDayChange(e, index)}
+                          input={<OutlinedInput label={`Dia ${index + 1}`} />}
+                        >
+                          <MenuItem value="segunda">Segunda-feira</MenuItem>
+                          <MenuItem value="terca">Terça-feira</MenuItem>
+                          <MenuItem value="quarta">Quarta-feira</MenuItem>
+                          <MenuItem value="quinta">Quinta-feira</MenuItem>
+                          <MenuItem value="sexta">Sexta-feira</MenuItem>
+                          <MenuItem value="sabado">Sábado</MenuItem>
+                          <MenuItem value="domingo">Domingo</MenuItem>
+                        </Select>
+                      </FormControl>
+                      <FormControl sx={{ m: 1 }}>
+                        <InputLabel htmlFor={`start-time-input-${index}`}>
+                          Início
+                        </InputLabel>
+                        <OutlinedInput
+                          id={`start-time-input-${index}`}
+                          type="time"
+                          value={day.startTime}
+                          onChange={(e) => handleStartTimeChange(e, index)}
+                          label="Horário de Início"
+                          inputProps={{
+                            step: 300,
+                          }}
+                        />
+                      </FormControl>
+                      <FormControl sx={{ m: 1 }}>
+                        <InputLabel htmlFor={`end-time-input-${index}`}>
+                          Término
+                        </InputLabel>
+                        <OutlinedInput
+                          id={`end-time-input-${index}`}
+                          type="time"
+                          value={day.endTime}
+                          onChange={(e) => handleEndTimeChange(e, index)}
+                          label="Horário de Término"
+                          inputProps={{
+                            step: 300,
+                          }}
+                        />
+                      </FormControl>
+                      <DeleteIcon onClick={() => handleDeleteDay(index)} />
+                    </Box>
+                  ))}
+                  <Button onClick={handleAddDay}>Adicionar Dia</Button>
+                </DialogContent>
+
+                <DialogActions>
+                  <Button onClick={handleClose}>Cancelar</Button>
+                  <Button onClick={handleSaveSchedule}>Salvar</Button>
+                </DialogActions>
+              </Dialog>
+            </Box>
+            <Box>
+              <Button
+                variant="outlined"
+                onClick={() => setOpenColor(true)}
+                sx={{
+                  color: "#FFFFFF",
+                  borderColor: "#FFFFFF",
+                  "& fieldset": {
+                    borderColor: "#FFFFFF",
+                  },
+                }}
+              >
+                Cor
+              </Button>
+
+              <Dialog
+                disableEscapeKeyDown
+                open={openColor}
+                onClose={handleCloseColor}
+              >
+                <DialogTitle>Selecione a cor secundaria</DialogTitle>
+                <DialogContent
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <BlockPicker
+                    color={color}
+                    onChange={(newColor) => setColor(newColor.hex)}
+                  />
+                </DialogContent>
+
+                <DialogActions>
+                  <Button onClick={() => setOpenColor(false)}>Voltar</Button>
+                  <Button onClick={handleSaveColor}>Salvar</Button>
+                </DialogActions>
+              </Dialog>
+            </Box>
+            <Box>
+              <Button
+                variant="outlined"
+                onClick={() => setOpenPayment(true)}
+                sx={{
+                  color: "#FFFFFF",
+                  borderColor: "#FFFFFF",
+                  "& fieldset": {
+                    borderColor: "#FFFFFF",
+                  },
+                }}
+              >
+                Forma de Pagamento
+              </Button>
+
+              <Dialog
+                disableEscapeKeyDown
+                open={openPayment}
+                onClose={handleClosePayment}
+              >
+                <DialogTitle>Selecione as formas de pagamentos</DialogTitle>
+                <DialogContent>
+                  <FormControl fullWidth>
+                    <InputLabel id="payment-select-label">
+                      Formas de Pagamento
+                    </InputLabel>
+                    <Select
+                      labelId="payment-select-label"
+                      id="payment-select"
+                      multiple
+                      value={selectedPayments}
+                      onChange={(e) => setSelectedPayments(e.target.value)}
+                      renderValue={(selected) => (
+                        <Box sx={{ display: "flex", flexWrap: "wrap" }}>
+                          {selected.map((payment) => (
+                            <Chip
+                              key={payment}
+                              label={payment}
+                              sx={{ margin: 0.5 }}
+                            />
+                          ))}
+                        </Box>
+                      )}
+                    >
+                      <MenuItem value="pix">PIX</MenuItem>
+                      <MenuItem value="cartao_credito">
+                        Cartão de Crédito
+                      </MenuItem>
+                      <MenuItem value="cartao_debito">
+                        Cartão de Débito
+                      </MenuItem>
+                      <MenuItem value="vale_refeicao">Vale Refeição</MenuItem>
+                      <MenuItem value="vale_alimentacao">
+                        Vale Alimentação
+                      </MenuItem>
+                      <MenuItem value="dinheiro">Dinheiro</MenuItem>
+                    </Select>
+                  </FormControl>
+                </DialogContent>
+
+                <DialogActions>
+                  <DialogActions>
+                    <Button onClick={() => setOpenPayment(false)}>
+                      Cancelar
+                    </Button>
+                    <Button onClick={handleSavePaymentOptions}>Salvar</Button>
+                  </DialogActions>
+                </DialogActions>
+              </Dialog>
+            </Box>
+          </Box>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              width: "95%",
+            }}
+          >
+            <Button variant="outlined">Salvar</Button>
+          </Box>
+        </Box>
 
         <Box
           sx={{

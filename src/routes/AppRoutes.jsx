@@ -1,4 +1,3 @@
-// routes.js
 import { Outlet } from "react-router-dom";
 import Order from "./../pages/Order.jsx";
 import PrivateRoute from "./../admin/src/routes/PrivateRoutes/PrivateRoutes";

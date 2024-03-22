@@ -8,6 +8,7 @@ import "../Listcart/listcart.css";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import { useEffect } from "react";
+import { useColor } from "../../context/useContextColor";
 
 export default function ListCart() {
   const {
@@ -17,6 +18,7 @@ export default function ListCart() {
     setCart,
     saveCartToSessionStorage,
   } = useCarrinho();
+  const { color } = useColor();
   useEffect(() => {
     let itensSelecionados =
       JSON.parse(sessionStorage.getItem("itensSelecionados")) || [];
@@ -172,7 +174,7 @@ export default function ListCart() {
                 sx={{
                   position: "relative",
                   display: "flex",
-                  backgroundColor: "#fae9de",
+                  backgroundColor: "#FFFFFF",
                   height: "auto",
                   width: "100%",
                   justifyContent: "flex-start",
@@ -180,7 +182,7 @@ export default function ListCart() {
                   alignItems: "center",
                   borderRadius: "29px !important",
                   margin: "0.4rem 0 10px 0",
-                  border: "3px #f46c26 solid",
+                  border: `3px ${color} solid`,
                   boxShadow:
                     "2px 8px 7px 5px #0003, 2px 2px 3px -1px #00000024, 2px 6px 4px #0000001f !important",
                 }}
@@ -189,7 +191,7 @@ export default function ListCart() {
                   sx={{
                     position: "relative",
                     display: "flex",
-                    backgroundColor: "#fae9de",
+                    backgroundColor: "#FFFFFF",
                     height: "100%",
                     width: "100%",
                     alignItems: "center",
@@ -203,7 +205,7 @@ export default function ListCart() {
                       flexDirection: "column",
                       justifyContent: "space-around",
                       alignItems: "start",
-                      backgroundColor: "#fae9de",
+                      backgroundColor: "#FFFFFF",
                       height: "100%",
                       width: "100%",
                       paddingLeft: "1rem",

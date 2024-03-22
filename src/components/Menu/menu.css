@@ -1,5 +1,3 @@
-
-
 .inputbox {
   height: 50px;
   min-height: 50px;
@@ -43,7 +41,6 @@
   width: 25%;
   color: #29292c !important;
   border-radius: 15px !important;
-  border: 1px #f76d26 solid;
   margin-right: 5px;
   margin-left: 5px;
   box-shadow: 5px 4px 5px 2px rgba(0, 0, 0, 0.2),
@@ -85,26 +82,10 @@
   letter-spacing: 0.0075em;
 }
 
-.cardMenu {
-  position: relative;
-  display: flex;
-  background-color: #fae9de !important;
-  height: 11rem;
-  max-width: 580px;
-  justify-content: flex-start;
-  flex-direction: row;
-  align-items: center;
-  border-radius: 29px !important;
-  border: 5px solid #e75603ba !important;
-  margin: 5px 0 10px 0;
-  box-shadow: 2px 8px 7px 5px #0003, 2px 2px 3px -1px #00000024,
-    2px 6px 4px #0000001f !important;
-}
-
 .cardContent {
   position: absolute;
   display: flex;
-  background-color: #fae9de;
+  background-color: #FFFFFF;
   width: 100%;
   height: 100%;
   align-items: center;
@@ -121,7 +102,7 @@
   flex-direction: column;
   justify-content: space-around;
   align-items: start;
-  background-color: #fae9de;
+  background-color: #FFFFFF;
   height: 100%;
   width: 100%;
   padding-left: 1rem;
@@ -137,14 +118,7 @@
   align-items: center;
   width: 94%;
 }
-.priceAndIcons .iconAddProduct {
-  width: 35%;
-  height: 35px;
-  border-radius: 10px;
-  padding: 2px;
-  background-color: #fb6c1a;
-  cursor: pointer;
-}
+
 .priceAndIcons .iconFavoriteMenu {
   position: absolute;
   right: 25%;
@@ -157,19 +131,4 @@
 .boxInputMenu input {
   padding: 10.5px 14px !important;
   padding-left: 2.8rem !important;
-}
-.input fieldset {
-  border-radius: 15px !important;
-  box-shadow: 4px 5px 9px 0px rgba(0, 0, 0, 0.75);
-  border-color: #f46c26 !important;
-}
-
-.iconSearchFilterMenu {
-  position: absolute;
-  left: 0.8rem !important;
-  top: 0.7rem !important;
-  color: #fb6c1a !important;
-  justify-content: center;
-  flex-wrap: nowrap;
-  flex-direction: column;
 }
