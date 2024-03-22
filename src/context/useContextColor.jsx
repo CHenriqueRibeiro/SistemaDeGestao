@@ -10,17 +10,21 @@ export const ColorProvider = ({ children }) => {
   useEffect(() => {
     const database = getDatabase();
     const databaseRef = ref(database, "corsecundaria");
-
+  
     const unsubscribe = onValue(databaseRef, (snapshot) => {
       const colorFromDB = snapshot.val();
-      if (colorFromDB) {
+      if (colorFromDB != null) {
         setColor(colorFromDB);
-        setColorLoaded(true);
+      } else {
+        // Define uma cor padrão caso o valor do Firebase seja null ou undefined
+        setColor("#FFFFFF"); // Ou qualquer outra cor padrão desejada
       }
+      setColorLoaded(true);
     });
-
+  
     return () => unsubscribe();
   }, []);
+  
 
   if (!isColorLoaded) {
     return null;
