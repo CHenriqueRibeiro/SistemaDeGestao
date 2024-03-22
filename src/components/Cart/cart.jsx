@@ -15,7 +15,7 @@ import { useFormat } from "../../utils/useFormat";
 import { NavLink } from "react-router-dom";
 
 import "./cart.css";
-import { useColor } from "../../context/useContextColor";
+import { useBusinessData } from "../../context/useBusinessData";
 
 export default function Cart() {
   const [value, setValue] = useState(0);
@@ -23,7 +23,7 @@ export default function Cart() {
   const [openModalCarrinho, setOpenModalCarrinho] = useState(false);
 
   const { cart, calculateSubtotal, clearCart } = useCarrinho();
-  const { color } = useColor();
+  const { color } = useBusinessData();
   const openListItems = () => {
     const addproducts = document.getElementById("displayItems");
     addproducts.classList.toggle("displayItemson");

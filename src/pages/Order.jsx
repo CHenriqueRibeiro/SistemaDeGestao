@@ -24,11 +24,11 @@ import { useCarrinho } from "../context/useCarrinho";
 import { useFormat } from "../utils/useFormat";
 
 import "./Order.css";
-import { useColor } from "../context/useContextColor";
+import { useBusinessData } from "../context/useBusinessData"; 
 
 const Order = () => {
   const [isEntrega, setIsEntrega] = useState(undefined);
-  const { color } = useColor();
+  const { color } = useBusinessData();
   const campoObrigatorio = (
     <Typography variant="caption" style={{ color: "red", marginLeft: "5px" }}>
       Campo obrigatório

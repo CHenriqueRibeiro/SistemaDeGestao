@@ -25,7 +25,7 @@ import "./menu.css";
 import { useCarrinho } from "../../context/useCarrinho";
 import { useFormat } from "./../../utils/useFormat";
 import Cart from "../Cart/cart";
-import { useColor } from "../../context/useContextColor";
+import { useBusinessData } from "../../context/useBusinessData";
 
 const schema = Yup.object().shape({
   refrigeranteDoCombo: Yup.string()
@@ -134,7 +134,7 @@ export default function Menu() {
   const [refrigeranteError, setRefrigeranteError] = useState("");
   const [bordaOptions, setBordaOptions] = useState([]);
   const [firebaseData, setFirebaseData] = useState({});
-  const { color } = useColor();
+  const { color } = useBusinessData();
   useEffect(() => {
     fetch(`https://testeapp-666bc-default-rtdb.firebaseio.com/.json`)
       .then((response) => response.json())

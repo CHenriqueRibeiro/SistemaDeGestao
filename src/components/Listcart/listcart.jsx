@@ -8,7 +8,7 @@ import "../Listcart/listcart.css";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import { useEffect } from "react";
-import { useColor } from "../../context/useContextColor";
+import { useBusinessData } from "../../context/useBusinessData";
 
 export default function ListCart() {
   const {
@@ -18,7 +18,7 @@ export default function ListCart() {
     setCart,
     saveCartToSessionStorage,
   } = useCarrinho();
-  const { color } = useColor();
+  const { color } = useBusinessData();
   useEffect(() => {
     let itensSelecionados =
       JSON.parse(sessionStorage.getItem("itensSelecionados")) || [];

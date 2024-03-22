@@ -7,16 +7,16 @@ import Container from "@mui/material/Container";
 import { Outlet } from "react-router-dom";
 import { CarrinhoProvider } from "./context/useCarrinho";
 import { CartProvider } from "./context/useContextMesas";
-import { ColorProvider } from "./context/useContextColor";
+import { BusinessProvider } from "./context/useBusinessData";
 
 export default function App() {
   return (
     <Container id="app" maxWidth="sm">
       <CartProvider>
         <CarrinhoProvider>
-          <ColorProvider>
+          <BusinessProvider>
             <Outlet />
-          </ColorProvider>
+          </BusinessProvider>
         </CarrinhoProvider>
       </CartProvider>
     </Container>

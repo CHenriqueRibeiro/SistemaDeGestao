@@ -17,10 +17,10 @@ import {
   Alert,
 } from "@mui/material";
 import { useState } from "react";
-import { useColor } from "../../context/useContextColor";
+import { useBusinessData } from "../../context/useBusinessData";
 
 export default function Header() {
-  const { color } = useColor();
+  const { color, businessHours, payment } = useBusinessData();
   const { handleCloseAlert, isAlertOpen } = useCarrinho();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -124,81 +124,37 @@ export default function Header() {
             background: "#FFFFFF",
           }}
         >
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              width: "100%",
-            }}
-          >
-            <Typography variant="h6">Horário de funcionamento: </Typography>
-            <Typography>
-              <b>Segunda-feira:</b>16:00 as 00:00
+          <Typography variant="h6">Horário de funcionamento: </Typography>
+          {[
+            "Segunda",
+            "Terça",
+            "Quarta",
+            "Quinta",
+            "Sexta",
+            "Sábado",
+            "Domingo",
+          ].map((day) => {
+            const dayData = businessHours.find(
+              (data) => data.day === day.toString()
+            );
+            return (
+              <Typography key={day}>
+                <b>{day}:</b>{" "}
+                {dayData && dayData.startTime && dayData.endTime
+                  ? `${dayData.startTime} às ${dayData.endTime}`
+                  : "Fechado"}
+              </Typography>
+            );
+          })}
+
+          <Typography variant="h6">Formas de pagamento: </Typography>
+          {payment.map((method, index) => (
+            <Typography key={index} variant="subtitle2">
+              <b>{method.forma.split("_").join(" ")}</b>
             </Typography>
-            <Typography>
-              <b>Terça-feira:</b>16:00 as 00:00
-            </Typography>
-            <Typography>
-              <b>Quarta-feira:</b>Fechado
-            </Typography>
-            <Typography>
-              <b>Quinta-feira</b>:16:00 as 00:00
-            </Typography>
-            <Typography>
-              <b>Sexta-feira:</b>16:00 as 00:00
-            </Typography>
-            <Typography>
-              <b>Sabado:</b>16:00 as 00:00
-            </Typography>
-            <Typography>
-              <b>Domingo:</b>16:00 as 00:00
-            </Typography>
-          </Box>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              width: "100%",
-              mt: 2,
-            }}
-          >
-            <Typography variant="h6">Formas de pagamento:</Typography>
-            <Typography>
-              <b>Credito</b>: Visa, Mastercard, Hipercard
-            </Typography>
-            <Typography>
-              <b>Debito:</b> Visa, Mastercard, Hipercard
-            </Typography>
-            <Typography>
-              <b>Vale Refeição:</b> Sodexo, Ticket, Ben Visa
-            </Typography>
-            <Typography>
-              <b>Transferencia:</b> Pix
-            </Typography>
-            <Typography>
-              <b>Dinheiro</b>
-            </Typography>
-          </Box>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              width: "100%",
-              mt: 2,
-            }}
-          >
-            <Typography variant="h6">Áreas de Entrega e Valores:</Typography>
-            <Typography>
-              <b>Pedrinhas:</b> R$ 2,00
-            </Typography>
-            <Typography>
-              <b>Bairro da paz:</b> R$ 4,00
-            </Typography>
-            <Typography>
-              <b>Bairro da luz:</b> R$ 7,00
-            </Typography>
-          </Box>
+          ))}
         </DialogContent>
+
         <DialogActions
           sx={{
             display: "flex",
