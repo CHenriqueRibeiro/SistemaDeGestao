@@ -28,7 +28,7 @@ import {
   set,
   onValue,
   off,
-  update,
+  push,
 } from "firebase/database";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
@@ -53,6 +53,13 @@ export default function Register() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [editProductDialogOpen, setEditProductDialogOpen] = useState(false);
   const [editedProduct, setEditedProduct] = useState({});
+  const [openAddProductDialog, setOpenAddProductDialog] = useState(false);
+  const [newProductData, setNewProductData] = useState({
+    id: "",
+    sabor: "",
+    valor: "",
+    imagem: "", // Adicione outros campos conforme necessário
+  });
   const handleData = (snapshot) => {
     if (snapshot.exists()) {
       setDatabaseData(snapshot.val());
@@ -283,41 +290,49 @@ export default function Register() {
     setEditProductDialogOpen(true);
   };
 
-  const handleSaveEditedProduct = async (category, index) => {
+  const handleSaveEditedProduct = async (category, editedProduct) => {
     try {
       if (editedProduct && category) {
-        const updatedProduct = { ...editedProduct };
-        console.log(updatedProduct);
-        updatedProduct.valor = parseFloat(updatedProduct.valor);
+        const { id, ...updatedFields } = editedProduct;
+        updatedFields.valor = parseFloat(updatedFields.valor);
 
         const db = getDatabase();
-        const productRef = ref(db, `${category}/${index}/${updatedProduct.id}`);
+        const categoryRef = ref(db, category);
 
-        console.log(index);
-        console.log(category);
-        console.log("teste", productRef.ref._path.pieces_[1]);
-        const snapshot = await get(productRef);
-        console.log("Snapshot existe:", snapshot.exists());
-        console.log(snapshot);
-        const secondPiece = snapshot.ref._path.pieces_[2];
-        console.log("Second Piece:", secondPiece);
-        console.log("Updated Product ID:", updatedProduct.id);
+        const snapshot = await get(categoryRef);
+        const currentData = snapshot.val();
 
-        if (Number(secondPiece) == updatedProduct.id) {
-          await update(productRef, {
-            id: updatedProduct.id,
-            ingredientes: updatedProduct.ingredientes,
-            sabor: updatedProduct.sabor,
-            valor: updatedProduct.valor,
-          });
+        if (currentData) {
+          if (Array.isArray(currentData)) {
+            const productIndex = currentData.findIndex(
+              (item) => item.id === id
+            );
+            if (productIndex !== -1) {
+              currentData[productIndex] = { id, ...updatedFields };
+            } else {
+              console.error("Produto não encontrado na categoria:", category);
+              return;
+            }
+          } else if (typeof currentData === "object") {
+            const itemToUpdate = findItemById(currentData, id);
+            if (itemToUpdate) {
+              Object.assign(itemToUpdate, updatedFields);
+            } else {
+              console.error("Item não encontrado na categoria:", category);
+              return;
+            }
+          }
+
+          await set(categoryRef, currentData);
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          setEditProductDialogOpen(false);
+          setEditedProduct(null);
+        } else {
+          console.error(
+            "Categoria não encontrada ou dados inválidos:",
+            category
+          );
         }
-
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        console.log("Produto depois da alteração:", updatedProduct);
-
-        setEditProductDialogOpen(false);
-        setEditedProduct(null);
       } else {
         console.error(
           "Erro ao salvar as alterações do produto: editedProduct ou category é null ou undefined"
@@ -325,6 +340,76 @@ export default function Register() {
       }
     } catch (error) {
       console.error("Erro ao salvar as alterações do produto:", error);
+    }
+  };
+
+  const findItemById = (object, id) => {
+    if (!object || typeof object !== "object") {
+      return null;
+    }
+
+    if (object.id === id) {
+      return object;
+    }
+
+    const keys = Object.keys(object);
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      const value = object[key];
+
+      if (value && typeof value === "object") {
+        const foundInChildren = findItemById(value, id);
+        if (foundInChildren) {
+          return foundInChildren;
+        }
+      }
+    }
+
+    return null;
+  };
+  const handleOpenAddProductDialog = (category) => {
+    setSelectedCategory(category);
+    setOpenAddProductDialog(true);
+  };
+
+  const handleCloseAddProductDialog = () => {
+    setOpenAddProductDialog(false);
+  };
+
+  const handleAddProduct = async (category) => {
+    try {
+      if (newProductData && category) {
+        const db = getDatabase();
+        const categoryRef = ref(db, category);
+        console.log(categoryRef);
+
+        const newProductId = push(categoryRef).key;
+
+        const newProduct = {
+          id: newProductId,
+          sabor: newProductData.sabor,
+          valor: parseFloat(newProductData.valor),
+          imagem: newProductData.imagem,
+        };
+
+        await set(ref(categoryRef, newProductId), newProduct);
+
+        console.log("Novo produto adicionado na categoria:", category);
+
+        setNewProductData({
+          id: "",
+          sabor: "",
+          valor: "",
+          imagem: "",
+        });
+        setOpenAddProductDialog(false);
+      } else {
+        console.error(
+          "Erro ao adicionar produto: newProductData ou category é null ou undefined"
+        );
+      }
+    } catch (error) {
+      console.error("Erro ao adicionar produto:", error);
     }
   };
 
@@ -628,6 +713,74 @@ export default function Register() {
                     </DialogActions>
                   </DialogActions>
                 </Dialog>
+                <Dialog
+                  open={openAddProductDialog}
+                  onClose={handleCloseAddProductDialog}
+                >
+                  <DialogTitle>Adicionar Novo Produto</DialogTitle>
+                  <DialogContent>
+                    <TextField
+                      label="ID"
+                      value={newProductData.id}
+                      onChange={(e) =>
+                        setNewProductData({
+                          ...newProductData,
+                          id: e.target.value,
+                        })
+                      }
+                      fullWidth
+                      margin="normal"
+                    />
+                    <TextField
+                      label="Sabor"
+                      value={newProductData.sabor}
+                      onChange={(e) =>
+                        setNewProductData({
+                          ...newProductData,
+                          sabor: e.target.value,
+                        })
+                      }
+                      fullWidth
+                      margin="normal"
+                    />
+                    <TextField
+                      label="Valor"
+                      value={newProductData.valor}
+                      onChange={(e) =>
+                        setNewProductData({
+                          ...newProductData,
+                          valor: e.target.value,
+                        })
+                      }
+                      fullWidth
+                      margin="normal"
+                    />
+                    <TextField
+                      label="Imagem"
+                      value={newProductData.imagem}
+                      onChange={(e) =>
+                        setNewProductData({
+                          ...newProductData,
+                          imagem: e.target.value,
+                        })
+                      }
+                      fullWidth
+                      margin="normal"
+                    />
+                    {/* Adicione mais campos conforme necessário */}
+                  </DialogContent>
+                  <DialogActions>
+                    <Button
+                      onClick={handleCloseAddProductDialog}
+                      color="primary"
+                    >
+                      Cancelar
+                    </Button>
+                    <Button onClick={handleAddProduct} color="primary">
+                      Salvar produto
+                    </Button>
+                  </DialogActions>
+                </Dialog>
               </Box>
             </Box>
             <Box
@@ -833,13 +986,7 @@ export default function Register() {
                                 const product =
                                   databaseData[category][productName];
 
-                                const {
-                                  id,
-                                  imagem,
-                                  ingredientes,
-                                  sabor,
-                                  valor,
-                                } = product;
+                                const { id, imagem, sabor, valor } = product;
 
                                 return (
                                   <>
@@ -1017,11 +1164,11 @@ export default function Register() {
                                           onClick={() =>
                                             handleSaveEditedProduct(
                                               selectedCategory,
-                                              index
+                                              editedProduct
                                             )
                                           }
                                         >
-                                          Salvar
+                                          Salvar alteração
                                         </Button>
                                       </DialogActions>
                                     </Dialog>
@@ -1039,6 +1186,9 @@ export default function Register() {
                               }}
                             >
                               <Button
+                                onClick={() =>
+                                  handleOpenAddProductDialog(selectedCategory)
+                                }
                                 variant="outlined"
                                 sx={{
                                   color: "#FFFFFF",
