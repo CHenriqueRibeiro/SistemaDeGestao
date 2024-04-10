@@ -20,7 +20,8 @@ import { useState } from "react";
 import { useBusinessData } from "../../context/useBusinessData";
 
 export default function Header() {
-  const { color, businessHours, payment } = useBusinessData();
+  const { color, businessHours, payment, establishmentData } =
+    useBusinessData();
   const { handleCloseAlert, isAlertOpen } = useCarrinho();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -55,7 +56,15 @@ export default function Header() {
               color: " #29292c",
             }}
           >
-            <h2>CheGO</h2>
+            <h2>
+              {establishmentData === "" ||
+              establishmentData === null ||
+              establishmentData === undefined ? (
+                <Typography variant="h6">Nome do local</Typography>
+              ) : (
+                establishmentData.nome
+              )}
+            </h2>
 
             <Typography
               sx={{
@@ -70,7 +79,14 @@ export default function Header() {
                   alignItems: "center",
                 }}
               >
-                {<WhatsAppIcon />}85 987206514
+                {<WhatsAppIcon />}
+                {establishmentData === "" ||
+                establishmentData === null ||
+                establishmentData === undefined ? (
+                  <Typography variant="subtitle2">Telefone</Typography>
+                ) : (
+                  establishmentData.telefone
+                )}
               </Box>
               <Box
                 sx={{

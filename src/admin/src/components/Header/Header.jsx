@@ -9,12 +9,13 @@ import Drawer from "@mui/material/Drawer";
 import Iconify from "../../components/iconify";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import LocalDiningRoundedIcon from "@mui/icons-material/LocalDiningRounded";
-import { Button } from "@mui/material";
+import { Button, Typography } from "@mui/material";
 import { NavLink, useNavigate } from "react-router-dom";
 import DeliveryDiningIcon from "@mui/icons-material/DeliveryDining";
 import TableBarIcon from "@mui/icons-material/TableBar";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { app } from "../../../../Firebase/firebase"; 
+import PaymentIcon from "@mui/icons-material/Payment";
+import { app } from "../../../../Firebase/firebase";
 import { getAuth } from "firebase/auth";
 
 export default function Header() {
@@ -177,7 +178,83 @@ export default function Header() {
               Cadastro
             </Button>
           </Box>
-
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+              justifyContentert: "space-evenly",
+              pl: 2,
+              gap: 1,
+              height: "auto",
+              position: "absolute",
+              width: " 100%",
+              bottom: "8rem",
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+                justifyContent: "start",
+                backgroundColor: "#1E2C39",
+                width: "95%",
+                color: "#FFFFFF",
+                borderRadius: 1,
+                pb: 1,
+                pt: 1,
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-start",
+                  justifyContent: "start",
+                  backgroundColor: "#1E2C39",
+                  width: "95%",
+                  color: "#FFFFFF",
+                  borderRadius: 1,
+                  pl: 1,
+                }}
+              >
+                <Typography>Proxima renovação:</Typography>
+                <Typography variant="subtitle2" fontSize={18}>
+                  10/05/2024
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                  backgroundColor: "#1E2C39",
+                  width: "100%",
+                  color: "#FFFFFF",
+                  borderRadius: 1,
+                  pl: 1,
+                }}
+              >
+                <Button
+                  sx={{
+                    p: "2px 8px",
+                    gap: 1,
+                    backgroundColor: "green",
+                    color: "#FFFFFF",
+                    textTransform: "capitalize",
+                    "&:hover": {
+                      backgroundColor: "green",
+                    },
+                  }}
+                >
+                  <PaymentIcon />
+                  Renovar assinatura
+                </Button>
+              </Box>
+            </Box>
+          </Box>
           <Box
             sx={{
               display: "flex",

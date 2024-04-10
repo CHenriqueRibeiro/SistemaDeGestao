@@ -8,6 +8,7 @@ export const BusinessProvider = ({ children }) => {
   const [color, setColor] = useState(null);
   const [businessHours, setBusinessHours] = useState([]);
   const [payment, setPayment] = useState([]);
+  const [establishmentData, setEstablishmentData] = useState([]);
   const [isDataLoaded, setDataLoaded] = useState(false);
 
   useEffect(() => {
@@ -15,6 +16,8 @@ export const BusinessProvider = ({ children }) => {
     const colorRef = ref(database, "corsecundaria");
     const businessHoursRef = ref(database, "horario_de_funcionamento");
     const formPayment = ref(database, "formaDePagamentos");
+    const establishmentDataRef = ref(database, "DadosDoLocal");
+
     const colorListener = onValue(colorRef, (snapshot) => {
       const colorFromDB = snapshot.val();
       setColor(colorFromDB || "#F76D25");
@@ -28,24 +31,34 @@ export const BusinessProvider = ({ children }) => {
           ...businessHoursFromDB[key],
         })
       );
-      console.log(businessHours);
       setBusinessHours(businessHoursArray);
       setDataLoaded(true);
     });
+
     const formOfPayment = onValue(formPayment, (snapshot) => {
       const formPaymentFromDB = snapshot.val();
       const formPaymentArray = formPaymentFromDB.map((payment) => ({
         forma: payment,
       }));
-      console.log("teste", payment);
       setPayment(formPaymentArray);
       setDataLoaded(true);
     });
+
+    const establishmentDataListener = onValue(
+      establishmentDataRef,
+      (snapshot) => {
+        const establishmentDataFromDB = snapshot.val();
+        setEstablishmentData(establishmentDataFromDB);
+        setDataLoaded(true);
+        console.log(establishmentDataFromDB);
+      }
+    );
 
     return () => {
       colorListener();
       businessHoursListener();
       formOfPayment();
+      establishmentDataListener();
     };
   }, []);
 
@@ -54,7 +67,9 @@ export const BusinessProvider = ({ children }) => {
   }
 
   return (
-    <ColorContext.Provider value={{ color, setColor, businessHours, payment }}>
+    <ColorContext.Provider
+      value={{ color, setColor, businessHours, payment, establishmentData }}
+    >
       {children}
     </ColorContext.Provider>
   );

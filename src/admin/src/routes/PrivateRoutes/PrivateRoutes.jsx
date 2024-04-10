@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../../../hooks/useAuth";
 import { Box, Typography } from "@mui/material";
@@ -5,10 +6,19 @@ import { Box, Typography } from "@mui/material";
 // eslint-disable-next-line react/prop-types
 const PrivateRoute = ({ element }) => {
   const { isAuthenticated } = useAuth();
+  const [shouldRedirect, setShouldRedirect] = useState(false);
 
-  return isAuthenticated() ? (
-    element
-  ) : (
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (!isAuthenticated()) {
+        setShouldRedirect(true);
+      }
+    }, 1000); 
+
+    return () => clearTimeout(timeout);
+  }, [isAuthenticated]);
+
+  return shouldRedirect ? (
     <>
       <Navigate
         to="/admin/dashboard"
@@ -34,6 +44,8 @@ const PrivateRoute = ({ element }) => {
         </Typography>
       </Box>
     </>
+  ) : (
+    element
   );
 };
 

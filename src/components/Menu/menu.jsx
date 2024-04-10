@@ -339,16 +339,18 @@ export default function Menu() {
           width: "100%",
         }}
       >
-        {categories.map((categoria, index) => (
-          <Tab
-            key={index}
-            label={categoria}
-            className={`tabs opt${categoria.toLowerCase()}`}
-            sx={{
-              border: `1px ${color} solid`,
-            }}
-          />
-        ))}
+        {categories
+          .filter((categoria) => categoria !== "formaDePagamentos") // Filtrando o array formaDePagamentos
+          .map((categoria, index) => (
+            <Tab
+              key={index}
+              label={categoria}
+              className={`tabs opt${categoria.toLowerCase()}`}
+              sx={{
+                border: `1px ${color} solid`,
+              }}
+            />
+          ))}
       </Tabs>
 
       <Box

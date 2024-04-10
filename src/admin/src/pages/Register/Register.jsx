@@ -18,6 +18,8 @@ import {
   ListItemText,
   Collapse,
   TextField,
+  Stack,
+  Alert,
 } from "@mui/material";
 import Header from "../../components/Header/Header";
 import { useEffect, useState } from "react";
@@ -28,7 +30,8 @@ import {
   set,
   onValue,
   off,
-  push,
+  child,
+  update,
 } from "firebase/database";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
@@ -38,6 +41,7 @@ import { BlockPicker } from "react-color";
 import ArrowDropDownRoundedIcon from "@mui/icons-material/ArrowDropDownRounded";
 import ArrowDropUpRoundedIcon from "@mui/icons-material/ArrowDropUpRounded";
 import { useFormat } from "../../../../utils/useFormat";
+import { NavLink } from "react-router-dom";
 export default function Register() {
   const [databaseData, setDatabaseData] = useState(null);
   const [edit, setEdit] = useState(false);
@@ -49,6 +53,8 @@ export default function Register() {
   const [openColor, setOpenColor] = useState(false);
   const [openPayment, setOpenPayment] = useState(false);
   const [color, setColor] = useState("#ffffff");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [selectedPayments, setSelectedPayments] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [editProductDialogOpen, setEditProductDialogOpen] = useState(false);
@@ -58,28 +64,67 @@ export default function Register() {
     id: "",
     sabor: "",
     valor: "",
-    imagem: "", // Adicione outros campos conforme necessário
+    ingredientes: "",
+    imagem: "",
   });
+  const [payment, setPayment] = useState(false);
+  const [testPeriod, setTestPeriod] = useState(false);
+  const [openAlert, setOpenAlert] = useState(false);
+  const [openAlertPayment, setOpenAlertPayment] = useState(false);
+
+  const [id, setId] = useState("");
   const handleData = (snapshot) => {
     if (snapshot.exists()) {
       setDatabaseData(snapshot.val());
-    } else {
-      console.log("Nenhum dado encontrado no banco de dados.");
     }
   };
 
   const handleError = (error) => {
     console.error("Erro ao buscar dados do banco de dados:", error);
   };
+  const handleAlert = () => {
+    setOpenAlert(false);
+  };
 
   useEffect(() => {
     const db = getDatabase();
     const databaseRef = ref(db);
-
     onValue(databaseRef, handleData, handleError);
 
     return () => off(databaseRef, "value", handleData);
   }, []);
+  useEffect(() => {
+    const db = getDatabase();
+    const categoryRef = ref(db, "Pagamento");
+
+    const unsubscribe = onValue(categoryRef, (snapshot) => {
+      try {
+        const pagamento = snapshot.val();
+
+        if (pagamento.PagamentoRealizado !== true) {
+          setOpenAlertPayment(true);
+          setPayment(false);
+        } else {
+          setOpenAlertPayment(false);
+        }
+
+        if (pagamento.PeriodoTeste !== true) {
+          setOpenAlert(true);
+          setTestPeriod(false);
+        } else {
+          setOpenAlert(false);
+        }
+
+        console.log(pagamento);
+      } catch (error) {
+        console.error("Erro ao buscar dados:", error);
+      }
+    });
+
+    // Retornar uma função de limpeza para cancelar a assinatura
+    return () => unsubscribe();
+  }, []);
+
   useEffect(() => {
     const db = getDatabase();
     const databaseRef = ref(db, "horario_de_funcionamento");
@@ -108,6 +153,15 @@ export default function Register() {
     });
     return () => off(colorRef);
   }, []);
+  useEffect(() => {
+    const DataRef = ref(getDatabase(), "DadosDoLocal");
+    onValue(DataRef, (snapshot) => {
+      const dataFromDB = snapshot.val();
+      setName(dataFromDB.nome);
+      setPhone(dataFromDB.telefone);
+    });
+    return () => off(DataRef);
+  }, []);
 
   useEffect(() => {
     const paymentOptionsRef = ref(getDatabase(), "formaDePagamentos");
@@ -119,6 +173,25 @@ export default function Register() {
     });
     return () => off(paymentOptionsRef);
   }, []);
+  useEffect(() => {
+    const fetchData = async () => {
+      if (selectedCategory) {
+        const db = getDatabase();
+        const categoryRef = ref(db, selectedCategory);
+        const categorySnapshot = await get(categoryRef);
+
+        const idxs = Object.values(categorySnapshot.val())
+          .map((item) => item.id)
+          .sort((a, b) => a - b);
+
+        const lastIndex = idxs[idxs.length - 1];
+        setId(lastIndex + 1);
+      }
+    };
+
+    fetchData();
+  }, [selectedCategory]);
+
   const handleDelete = async (category) => {
     const db = getDatabase();
     const categoryRef = ref(db, category);
@@ -149,8 +222,6 @@ export default function Register() {
           } else {
             await set(categoryRef, [editedCategoryName]);
           }
-        } else {
-          console.log("O nome da categoria não pode ser vazio.");
         }
       } else {
         if (
@@ -162,8 +233,6 @@ export default function Register() {
             ref(db, `${editedCategoryNewName}`),
             databaseData[editedCategoryName]
           );
-        } else {
-          console.log("Os nomes da categoria não podem ser vazios.");
         }
       }
 
@@ -191,8 +260,6 @@ export default function Register() {
         setCreateCategory(false);
         setEditedCategoryName("");
         setEditedCategoryNewName("");
-      } else {
-        console.log("Os nomes da categoria não podem ser vazios.");
       }
     } catch (error) {
       console.error("Erro ao salvar categoria:", error);
@@ -281,7 +348,7 @@ export default function Register() {
 
     const db = getDatabase();
     const colorRef = ref(db, "corsecundaria");
-    set(colorRef, [color]);
+    set(colorRef, color);
 
     setOpenColor(false);
   };
@@ -367,52 +434,83 @@ export default function Register() {
 
     return null;
   };
-  const handleOpenAddProductDialog = (category) => {
-    setSelectedCategory(category);
-    setOpenAddProductDialog(true);
-  };
 
   const handleCloseAddProductDialog = () => {
     setOpenAddProductDialog(false);
   };
 
-  const handleAddProduct = async (category) => {
+  const handleOpenAddProductDialog = (category) => {
+    setSelectedCategory(category);
+    setOpenAddProductDialog(true);
+  };
+
+  const handleAddProduct = async () => {
     try {
-      if (newProductData && category) {
-        const db = getDatabase();
-        const categoryRef = ref(db, category);
-        console.log(categoryRef);
+      const db = getDatabase();
 
-        const newProductId = push(categoryRef).key;
+      const categoryRef = ref(db, selectedCategory);
 
-        const newProduct = {
-          id: newProductId,
-          sabor: newProductData.sabor,
-          valor: parseFloat(newProductData.valor),
-          imagem: newProductData.imagem,
-        };
+      const categorySnapshot = await get(categoryRef);
 
-        await set(ref(categoryRef, newProductId), newProduct);
+      const existingProduct = categorySnapshot.exists()
+        ? categorySnapshot.val()[0]
+        : null;
+      const isProductValid =
+        existingProduct && existingProduct.sabor && existingProduct.valor;
 
-        console.log("Novo produto adicionado na categoria:", category);
+      let nextProductId = 0;
 
-        setNewProductData({
-          id: "",
-          sabor: "",
-          valor: "",
-          imagem: "",
-        });
-        setOpenAddProductDialog(false);
+      if (!isProductValid) {
+        nextProductId = 0;
       } else {
-        console.error(
-          "Erro ao adicionar produto: newProductData ou category é null ou undefined"
-        );
+        const idxs = categorySnapshot
+          .val()
+          .map((item) => item.id)
+          .sort((a, b) => a - b);
+        const lastIndex = idxs[idxs.length - 1];
+        nextProductId = lastIndex;
       }
+
+      const newProduct = {
+        id: nextProductId + 1,
+        sabor: newProductData.sabor,
+        ingredientes: newProductData.ingredientes,
+        valor: parseFloat(newProductData.valor),
+        imagem: newProductData.imagem,
+      };
+
+      await set(child(categoryRef, nextProductId.toString()), newProduct);
+
+      setNewProductData({
+        id: "",
+        sabor: "",
+        valor: "",
+        ingredientes: "",
+        imagem: "",
+      });
+
+      setOpenAddProductDialog(false);
     } catch (error) {
       console.error("Erro ao adicionar produto:", error);
     }
   };
+  const handleEditNameAndPhone = () => {
+    const db = getDatabase();
+    const updates = {};
+    updates["nome"] = name;
 
+    updates["telefone"] = phone;
+
+    const localRef = ref(db, "DadosDoLocal");
+
+    update(localRef, updates)
+      .then(() => {
+        console.log("Dados atualizados com sucesso!");
+      })
+      .catch((error) => {
+        console.error("Erro ao atualizar os dados:", error);
+      });
+  };
   return (
     <>
       <Box
@@ -435,6 +533,58 @@ export default function Register() {
             overflow: "auto",
           }}
         >
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "95%",
+              mt: 1,
+            }}
+          >
+            <Stack sx={{ width: "100%" }} spacing={2}>
+              {testPeriod === false && (
+                <>
+                  <Collapse in={openAlert}>
+                    <Alert severity="warning" onClose={handleAlert}>
+                      O período do fim do teste grátis acaba em breve, para
+                      continuar usando os serviços realize o pagamento{" "}
+                      <NavLink
+                        to={
+                          "https://api.whatsapp.com/send?phone=5585987920129&text=Ol%C3%A1,%20quero%20realizar%20o%20pagamento%20da%20mensalidade%20da%20minha%20loja."
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        aqui!
+                      </NavLink>
+                      !
+                    </Alert>
+                  </Collapse>
+                </>
+              )}
+              {payment === false && (
+                <>
+                  <Collapse in={openAlertPayment}>
+                    <Alert severity="error" onClose={handleAlert}>
+                      Sua assinatura venceu, caso queira continuar com os
+                      serviços realize o pagamento{" "}
+                      <NavLink
+                        to={
+                          "https://api.whatsapp.com/send?phone=5585987920129&text=Ol%C3%A1,%20quero%20realizar%20o%20pagamento%20da%20mensalidade%20da%20minha%20loja."
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        aqui!
+                      </NavLink>
+                    </Alert>
+                  </Collapse>
+                </>
+              )}
+            </Stack>
+          </Box>
           <Box
             sx={{
               display: "flex",
@@ -495,6 +645,8 @@ export default function Register() {
               >
                 <OutlinedInput
                   placeholder="Nome"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   sx={{
                     color: "#FFFFFF",
                     "& fieldset": {
@@ -504,6 +656,8 @@ export default function Register() {
                 />
                 <OutlinedInput
                   placeholder="Telefone"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   sx={{
                     color: "#FFFFFF",
                     "& fieldset": {
@@ -721,15 +875,10 @@ export default function Register() {
                   <DialogContent>
                     <TextField
                       label="ID"
-                      value={newProductData.id}
-                      onChange={(e) =>
-                        setNewProductData({
-                          ...newProductData,
-                          id: e.target.value,
-                        })
-                      }
+                      value={id}
                       fullWidth
                       margin="normal"
+                      disabled
                     />
                     <TextField
                       label="Sabor"
@@ -756,6 +905,18 @@ export default function Register() {
                       margin="normal"
                     />
                     <TextField
+                      label="Ingredientes"
+                      value={newProductData.ingredientes}
+                      onChange={(e) =>
+                        setNewProductData({
+                          ...newProductData,
+                          ingredientes: e.target.value,
+                        })
+                      }
+                      fullWidth
+                      margin="normal"
+                    />
+                    <TextField
                       label="Imagem"
                       value={newProductData.imagem}
                       onChange={(e) =>
@@ -767,7 +928,6 @@ export default function Register() {
                       fullWidth
                       margin="normal"
                     />
-                    {/* Adicione mais campos conforme necessário */}
                   </DialogContent>
                   <DialogActions>
                     <Button
@@ -792,7 +952,9 @@ export default function Register() {
                 width: "95%",
               }}
             >
-              <Button variant="outlined">Salvar</Button>
+              <Button onClick={handleEditNameAndPhone} variant="outlined">
+                Salvar
+              </Button>
             </Box>
           </Box>
 
@@ -857,31 +1019,44 @@ export default function Register() {
               ) : (
                 <>
                   {databaseData &&
-                    Object.keys(databaseData).map((category) => (
-                      <Chip
-                        sx={{
-                          color: "#FFFFFF",
-                          margin: "4px",
-                          gap: "0.8rem",
-                          p: "1rem",
-                        }}
-                        key={category}
-                        label={category}
-                        icon={
-                          <>
-                            <DeleteIcon
-                              style={{ color: "red" }}
-                              onClick={() => handleDelete(category)}
-                            />
-                            <EditRoundedIcon
-                              style={{ color: "#FFFFFF", cursor: "pointer" }}
-                              onClick={() => handleEdit(category)}
-                            />
-                          </>
-                        }
-                        variant="outlined"
-                      />
-                    ))}
+                    Object.keys(databaseData).map((category) => {
+                      if (
+                        category === "corsecundaria" ||
+                        category === "horario_de_funcionamento" ||
+                        category === "formaDePagamentos" ||
+                        category === "opcionais" ||
+                        category === "adicionais" ||
+                        category === "DadosDoLocal" ||
+                        category === "Pagamento"
+                      ) {
+                        return null;
+                      }
+                      return (
+                        <Chip
+                          sx={{
+                            color: "#FFFFFF",
+                            margin: "4px",
+                            gap: "0.8rem",
+                            p: "1rem",
+                          }}
+                          key={category}
+                          label={category}
+                          icon={
+                            <>
+                              <DeleteIcon
+                                style={{ color: "red" }}
+                                onClick={() => handleDelete(category)}
+                              />
+                              <EditRoundedIcon
+                                style={{ color: "#FFFFFF", cursor: "pointer" }}
+                                onClick={() => handleEdit(category)}
+                              />
+                            </>
+                          }
+                          variant="outlined"
+                        />
+                      );
+                    })}
                 </>
               )}
               {edit === true ? (
@@ -953,7 +1128,9 @@ export default function Register() {
                       category === "horario_de_funcionamento" ||
                       category === "formaDePagamentos" ||
                       category === "opcionais" ||
-                      category === "adicionais"
+                      category === "adicionais" ||
+                      category === "DadosDoLocal" ||
+                      category === "Pagamento"
                     ) {
                       return null;
                     }
@@ -1069,10 +1246,6 @@ export default function Register() {
                                           marginRight: 5,
                                         }}
                                         onClick={() => {
-                                          console.log(
-                                            "Produto selecionado para edição:",
-                                            product
-                                          );
                                           handleEditProduct(product);
                                         }}
                                       />
@@ -1150,7 +1323,6 @@ export default function Register() {
                                             })
                                           }
                                         />
-                                        {/* Adicione mais campos de entrada conforme necessário */}
                                       </DialogContent>
                                       <DialogActions>
                                         <Button
