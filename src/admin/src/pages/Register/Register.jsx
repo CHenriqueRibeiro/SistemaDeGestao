@@ -42,9 +42,13 @@ import ArrowDropDownRoundedIcon from "@mui/icons-material/ArrowDropDownRounded";
 import ArrowDropUpRoundedIcon from "@mui/icons-material/ArrowDropUpRounded";
 import { useFormat } from "../../../../utils/useFormat";
 import { NavLink } from "react-router-dom";
+import PaymentRoundedIcon from "@mui/icons-material/PaymentRounded";
+import PaletteRoundedIcon from "@mui/icons-material/PaletteRounded";
+import WatchLaterRoundedIcon from "@mui/icons-material/WatchLaterRounded";
 export default function Register() {
   const [databaseData, setDatabaseData] = useState(null);
   const [edit, setEdit] = useState(false);
+  const [editData, setEditData] = useState(false);
   const [createCategory, setCreateCategory] = useState(false);
   const [editedCategoryName, setEditedCategoryName] = useState("");
   const [editedCategoryNewName, setEditedCategoryNewName] = useState("");
@@ -100,7 +104,10 @@ export default function Register() {
     const unsubscribe = onValue(categoryRef, (snapshot) => {
       try {
         const pagamento = snapshot.val();
+        const pagamentoEmDia = pagamento.PagamentoRealizado;
+        // const periodoDeTeste = pagamento.PeriodoTeste;
 
+        setPayment(pagamentoEmDia);
         if (pagamento.PagamentoRealizado !== true) {
           setOpenAlertPayment(true);
           setPayment(false);
@@ -114,14 +121,11 @@ export default function Register() {
         } else {
           setOpenAlert(false);
         }
-
-        console.log(pagamento);
       } catch (error) {
         console.error("Erro ao buscar dados:", error);
       }
     });
 
-    // Retornar uma função de limpeza para cancelar a assinatura
     return () => unsubscribe();
   }, []);
 
@@ -209,7 +213,9 @@ export default function Register() {
     setEditedCategoryName(category);
     setEditedCategoryNewName(category);
   };
-
+  const handleEditData = () => {
+    setEditData(true);
+  };
   const handleSave = async () => {
     const db = getDatabase();
     try {
@@ -506,6 +512,7 @@ export default function Register() {
     update(localRef, updates)
       .then(() => {
         console.log("Dados atualizados com sucesso!");
+        setEditData(false);
       })
       .catch((error) => {
         console.error("Erro ao atualizar os dados:", error);
@@ -527,6 +534,7 @@ export default function Register() {
         <Header />
         <Box
           sx={{
+            width: "100dvw",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -590,9 +598,9 @@ export default function Register() {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              justifyContent: "flex-start",
-              width: "95%",
-              height: "20rem",
+              justifyContent: "space-around",
+              width: "95dvw",
+              height: "22rem",
               background: "#1E2C39",
               borderRadius: 3,
               mt: 3,
@@ -610,20 +618,20 @@ export default function Register() {
                 justifyContent: "space-between",
                 width: "95%",
                 borderBottom: "1px #FFFFFF solid",
+                pb: 1,
               }}
             >
               <Typography color={"#FFFFFF"}>
                 Dados do estabelecimento
               </Typography>
               <EditRoundedIcon
-                style={{ color: "#FFFFFF" }}
-                onClick={() => setCreateCategory(true)}
+                titleAccess="Editar dados"
+                style={{ color: "#FFFFFF", cursor: "pointer" }}
+                onClick={() => handleEditData()}
               />
             </Box>
             <Box
               sx={{
-                pt: "1rem",
-                overflow: "auto",
                 display: "flex",
                 flexDirection: "row",
                 alignItems: "center",
@@ -635,6 +643,7 @@ export default function Register() {
             >
               <Box
                 sx={{
+                  gap: 0.8,
                   display: "flex",
                   flexDirection: "row",
                   alignItems: "center",
@@ -644,7 +653,7 @@ export default function Register() {
                 }}
               >
                 <OutlinedInput
-                  placeholder="Nome"
+                  placeholder="Nome do estabelecimento"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   sx={{
@@ -653,6 +662,9 @@ export default function Register() {
                       borderColor: "#FFFFFF",
                     },
                   }}
+                  disabled={
+                    payment === false || editData === false ? true : false
+                  }
                 />
                 <OutlinedInput
                   placeholder="Telefone"
@@ -664,298 +676,349 @@ export default function Register() {
                       borderColor: "#FFFFFF",
                     },
                   }}
+                  disabled={
+                    payment === false || editData === false ? true : false
+                  }
                 />
               </Box>
               <Box
                 sx={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  flexWrap: "wrap",
                   width: "95%",
+                  gap: 1,
+                  display: "flex",
+                  flexDirection: "column",
                 }}
               >
-                <Button
-                  variant="outlined"
-                  onClick={handleClickOpen}
+                <Box
                   sx={{
-                    color: "#FFFFFF",
-                    borderColor: "#FFFFFF",
-                    "& fieldset": {
-                      borderColor: "#FFFFFF",
-                    },
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
                   }}
                 >
-                  Horario de funcionamento
-                </Button>
-                <Dialog disableEscapeKeyDown open={open} onClose={handleClose}>
-                  <DialogTitle>
-                    Selecione o horário de funcionamento
-                  </DialogTitle>
-                  <DialogContent>
-                    {additionalDays.map((day, index) => (
-                      <Box key={index}>
-                        <FormControl sx={{ m: 1, minWidth: 200 }}>
-                          <InputLabel id={`day-select-label-${index}`}>
-                            Dia {index + 1}
-                          </InputLabel>
-                          <Select
-                            labelId={`day-select-label-${index}`}
-                            id={`day-select-${index}`}
-                            value={day.day}
-                            onChange={(e) => handleDayChange(e, index)}
-                            input={<OutlinedInput label={`Dia ${index + 1}`} />}
-                          >
-                            <MenuItem value="Segunda">Segunda-feira</MenuItem>
-                            <MenuItem value="Terça">Terça-feira</MenuItem>
-                            <MenuItem value="Quarta">Quarta-feira</MenuItem>
-                            <MenuItem value="Quinta">Quinta-feira</MenuItem>
-                            <MenuItem value="Sexta">Sexta-feira</MenuItem>
-                            <MenuItem value="Sábado">Sábado</MenuItem>
-                            <MenuItem value="Domingo">Domingo</MenuItem>
-                          </Select>
-                        </FormControl>
-                        <FormControl sx={{ m: 1 }}>
-                          <InputLabel htmlFor={`start-time-input-${index}`}>
-                            Início
-                          </InputLabel>
-                          <OutlinedInput
-                            id={`start-time-input-${index}`}
-                            type="time"
-                            value={day.startTime}
-                            onChange={(e) => handleStartTimeChange(e, index)}
-                            label="Horário de Início"
-                            inputProps={{
-                              step: 300,
-                            }}
-                          />
-                        </FormControl>
-                        <FormControl sx={{ m: 1 }}>
-                          <InputLabel htmlFor={`end-time-input-${index}`}>
-                            Término
-                          </InputLabel>
-                          <OutlinedInput
-                            id={`end-time-input-${index}`}
-                            type="time"
-                            value={day.endTime}
-                            onChange={(e) => handleEndTimeChange(e, index)}
-                            label="Horário de Término"
-                            inputProps={{
-                              step: 300,
-                            }}
-                          />
-                        </FormControl>
-                        <DeleteIcon onClick={() => handleDeleteDay(index)} />
-                      </Box>
-                    ))}
-                    <Button onClick={handleAddDay}>Adicionar Dia</Button>
-                  </DialogContent>
-
-                  <DialogActions>
-                    <Button onClick={handleClose}>Cancelar</Button>
-                    <Button onClick={handleSaveSchedule}>Salvar</Button>
-                  </DialogActions>
-                </Dialog>
-              </Box>
-              <Box>
-                <Button
-                  variant="outlined"
-                  onClick={() => setOpenColor(true)}
-                  sx={{
-                    color: "#FFFFFF",
-                    borderColor: "#FFFFFF",
-                    "& fieldset": {
-                      borderColor: "#FFFFFF",
-                    },
-                  }}
-                >
-                  Cor
-                </Button>
-
-                <Dialog
-                  disableEscapeKeyDown
-                  open={openColor}
-                  onClose={handleCloseColor}
-                >
-                  <DialogTitle>Selecione a cor secundaria</DialogTitle>
-                  <DialogContent
+                  <Button
+                    variant="outlined"
+                    onClick={handleClickOpen}
                     sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <BlockPicker
-                      color={color}
-                      onChange={(newColor) => setColor(newColor.hex)}
-                    />
-                  </DialogContent>
-
-                  <DialogActions>
-                    <Button onClick={() => setOpenColor(false)}>Voltar</Button>
-                    <Button onClick={handleSaveColor}>Salvar</Button>
-                  </DialogActions>
-                </Dialog>
-              </Box>
-              <Box>
-                <Button
-                  variant="outlined"
-                  onClick={() => setOpenPayment(true)}
-                  sx={{
-                    color: "#FFFFFF",
-                    borderColor: "#FFFFFF",
-                    "& fieldset": {
+                      gap: 2,
+                      color: "#FFFFFF",
                       borderColor: "#FFFFFF",
-                    },
-                  }}
-                >
-                  Forma de Pagamento
-                </Button>
+                      "&:hover": {
+                        borderColor: "#FFFFFF",
+                      },
+                    }}
+                    disabled={
+                      payment === false || editData === false ? true : false
+                    }
+                  >
+                    <WatchLaterRoundedIcon />
+                    Horario de funcionamento
+                  </Button>
+                  <Dialog
+                    disableEscapeKeyDown
+                    open={open}
+                    onClose={handleClose}
+                  >
+                    <DialogTitle>
+                      Selecione o horário de funcionamento
+                    </DialogTitle>
+                    <DialogContent>
+                      {additionalDays.map((day, index) => (
+                        <Box key={index}>
+                          <FormControl sx={{ m: 1, minWidth: 200 }}>
+                            <InputLabel id={`day-select-label-${index}`}>
+                              Dia {index + 1}
+                            </InputLabel>
+                            <Select
+                              labelId={`day-select-label-${index}`}
+                              id={`day-select-${index}`}
+                              value={day.day}
+                              onChange={(e) => handleDayChange(e, index)}
+                              input={
+                                <OutlinedInput label={`Dia ${index + 1}`} />
+                              }
+                            >
+                              <MenuItem value="Segunda">Segunda-feira</MenuItem>
+                              <MenuItem value="Terça">Terça-feira</MenuItem>
+                              <MenuItem value="Quarta">Quarta-feira</MenuItem>
+                              <MenuItem value="Quinta">Quinta-feira</MenuItem>
+                              <MenuItem value="Sexta">Sexta-feira</MenuItem>
+                              <MenuItem value="Sábado">Sábado</MenuItem>
+                              <MenuItem value="Domingo">Domingo</MenuItem>
+                            </Select>
+                          </FormControl>
+                          <FormControl sx={{ m: 1 }}>
+                            <InputLabel htmlFor={`start-time-input-${index}`}>
+                              Início
+                            </InputLabel>
+                            <OutlinedInput
+                              id={`start-time-input-${index}`}
+                              type="time"
+                              value={day.startTime}
+                              onChange={(e) => handleStartTimeChange(e, index)}
+                              label="Horário de Início"
+                              inputProps={{
+                                step: 300,
+                              }}
+                            />
+                          </FormControl>
+                          <FormControl sx={{ m: 1 }}>
+                            <InputLabel htmlFor={`end-time-input-${index}`}>
+                              Término
+                            </InputLabel>
+                            <OutlinedInput
+                              id={`end-time-input-${index}`}
+                              type="time"
+                              value={day.endTime}
+                              onChange={(e) => handleEndTimeChange(e, index)}
+                              label="Horário de Término"
+                              inputProps={{
+                                step: 300,
+                              }}
+                            />
+                          </FormControl>
+                          <DeleteIcon onClick={() => handleDeleteDay(index)} />
+                        </Box>
+                      ))}
+                      <Button onClick={handleAddDay}>Adicionar Dia</Button>
+                    </DialogContent>
 
-                <Dialog
-                  disableEscapeKeyDown
-                  open={openPayment}
-                  onClose={handleClosePayment}
-                >
-                  <DialogTitle>Selecione as formas de pagamentos</DialogTitle>
-                  <DialogContent>
-                    <FormControl fullWidth>
-                      <InputLabel id="payment-select-label">
-                        Formas de Pagamento
-                      </InputLabel>
-                      <Select
-                        labelId="payment-select-label"
-                        id="payment-select"
-                        multiple
-                        value={selectedPayments}
-                        onChange={(e) => setSelectedPayments(e.target.value)}
-                        renderValue={(selected) => (
-                          <Box sx={{ display: "flex", flexWrap: "wrap" }}>
-                            {selected.map((payment) => (
-                              <Chip
-                                key={payment}
-                                label={payment}
-                                sx={{ margin: 0.5 }}
-                              />
-                            ))}
-                          </Box>
-                        )}
-                      >
-                        <MenuItem value="pix">PIX</MenuItem>
-                        <MenuItem value="cartao_de_credito">
-                          Cartão de Crédito
-                        </MenuItem>
-                        <MenuItem value="cartao_de_debito">
-                          Cartão de Débito
-                        </MenuItem>
-                        <MenuItem value="vale_refeicao">Vale Refeição</MenuItem>
-                        <MenuItem value="vale_alimentacao">
-                          Vale Alimentação
-                        </MenuItem>
-                        <MenuItem value="dinheiro">Dinheiro</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </DialogContent>
-
-                  <DialogActions>
                     <DialogActions>
-                      <Button onClick={() => setOpenPayment(false)}>
+                      <Button onClick={handleClose}>Cancelar</Button>
+                      <Button onClick={handleSaveSchedule}>Salvar</Button>
+                    </DialogActions>
+                  </Dialog>
+                </Box>
+                <Box>
+                  <Button
+                    variant="outlined"
+                    onClick={() => setOpenPayment(true)}
+                    sx={{
+                      gap: 2,
+                      color: "#FFFFFF",
+                      borderColor: "#FFFFFF",
+                      "&:hover": {
+                        borderColor: "#FFFFFF",
+                      },
+                    }}
+                    disabled={
+                      payment === false || editData === false ? true : false
+                    }
+                  >
+                    <PaymentRoundedIcon />
+                    Forma de Pagamento
+                  </Button>
+
+                  <Dialog
+                    disableEscapeKeyDown
+                    open={openPayment}
+                    onClose={handleClosePayment}
+                  >
+                    <DialogTitle>Selecione as formas de pagamentos</DialogTitle>
+                    <DialogContent>
+                      <FormControl fullWidth>
+                        <InputLabel id="payment-select-label">
+                          Formas de Pagamento
+                        </InputLabel>
+                        <Select
+                          labelId="payment-select-label"
+                          id="payment-select"
+                          multiple
+                          value={selectedPayments}
+                          onChange={(e) => setSelectedPayments(e.target.value)}
+                          renderValue={(selected) => (
+                            <Box sx={{ display: "flex", flexWrap: "wrap" }}>
+                              {selected.map((payment) => (
+                                <Chip
+                                  key={payment}
+                                  label={payment}
+                                  sx={{ margin: 0.5 }}
+                                />
+                              ))}
+                            </Box>
+                          )}
+                        >
+                          <MenuItem value="pix">PIX</MenuItem>
+                          <MenuItem value="cartao_de_credito">
+                            Cartão de Crédito
+                          </MenuItem>
+                          <MenuItem value="cartao_de_debito">
+                            Cartão de Débito
+                          </MenuItem>
+                          <MenuItem value="vale_refeicao">
+                            Vale Refeição
+                          </MenuItem>
+                          <MenuItem value="vale_alimentacao">
+                            Vale Alimentação
+                          </MenuItem>
+                          <MenuItem value="dinheiro">Dinheiro</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </DialogContent>
+
+                    <DialogActions>
+                      <DialogActions>
+                        <Button onClick={() => setOpenPayment(false)}>
+                          Cancelar
+                        </Button>
+                        <Button onClick={handleSavePaymentOptions}>
+                          Salvar
+                        </Button>
+                      </DialogActions>
+                    </DialogActions>
+                  </Dialog>
+                  <Dialog
+                    open={openAddProductDialog}
+                    onClose={handleCloseAddProductDialog}
+                  >
+                    <DialogTitle>Adicionar Novo Produto</DialogTitle>
+                    <DialogContent>
+                      <TextField
+                        label="ID"
+                        value={id}
+                        fullWidth
+                        margin="normal"
+                        disabled
+                      />
+                      <TextField
+                        label="Sabor"
+                        value={newProductData.sabor}
+                        onChange={(e) =>
+                          setNewProductData({
+                            ...newProductData,
+                            sabor: e.target.value,
+                          })
+                        }
+                        fullWidth
+                        margin="normal"
+                      />
+                      <TextField
+                        label="Valor"
+                        value={newProductData.valor}
+                        onChange={(e) =>
+                          setNewProductData({
+                            ...newProductData,
+                            valor: e.target.value,
+                          })
+                        }
+                        fullWidth
+                        margin="normal"
+                      />
+                      <TextField
+                        label="Ingredientes"
+                        value={newProductData.ingredientes}
+                        onChange={(e) =>
+                          setNewProductData({
+                            ...newProductData,
+                            ingredientes: e.target.value,
+                          })
+                        }
+                        fullWidth
+                        margin="normal"
+                      />
+                      <TextField
+                        label="Imagem"
+                        value={newProductData.imagem}
+                        onChange={(e) =>
+                          setNewProductData({
+                            ...newProductData,
+                            imagem: e.target.value,
+                          })
+                        }
+                        fullWidth
+                        margin="normal"
+                      />
+                    </DialogContent>
+                    <DialogActions>
+                      <Button
+                        onClick={handleCloseAddProductDialog}
+                        color="primary"
+                      >
                         Cancelar
                       </Button>
-                      <Button onClick={handleSavePaymentOptions}>Salvar</Button>
+                      <Button onClick={handleAddProduct} color="primary">
+                        Salvar produto
+                      </Button>
                     </DialogActions>
-                  </DialogActions>
-                </Dialog>
-                <Dialog
-                  open={openAddProductDialog}
-                  onClose={handleCloseAddProductDialog}
-                >
-                  <DialogTitle>Adicionar Novo Produto</DialogTitle>
-                  <DialogContent>
-                    <TextField
-                      label="ID"
-                      value={id}
-                      fullWidth
-                      margin="normal"
-                      disabled
-                    />
-                    <TextField
-                      label="Sabor"
-                      value={newProductData.sabor}
-                      onChange={(e) =>
-                        setNewProductData({
-                          ...newProductData,
-                          sabor: e.target.value,
-                        })
-                      }
-                      fullWidth
-                      margin="normal"
-                    />
-                    <TextField
-                      label="Valor"
-                      value={newProductData.valor}
-                      onChange={(e) =>
-                        setNewProductData({
-                          ...newProductData,
-                          valor: e.target.value,
-                        })
-                      }
-                      fullWidth
-                      margin="normal"
-                    />
-                    <TextField
-                      label="Ingredientes"
-                      value={newProductData.ingredientes}
-                      onChange={(e) =>
-                        setNewProductData({
-                          ...newProductData,
-                          ingredientes: e.target.value,
-                        })
-                      }
-                      fullWidth
-                      margin="normal"
-                    />
-                    <TextField
-                      label="Imagem"
-                      value={newProductData.imagem}
-                      onChange={(e) =>
-                        setNewProductData({
-                          ...newProductData,
-                          imagem: e.target.value,
-                        })
-                      }
-                      fullWidth
-                      margin="normal"
-                    />
-                  </DialogContent>
-                  <DialogActions>
-                    <Button
-                      onClick={handleCloseAddProductDialog}
-                      color="primary"
+                  </Dialog>
+                </Box>
+                <Box>
+                  <Button
+                    variant="outlined"
+                    onClick={() => setOpenColor(true)}
+                    sx={{
+                      gap: 2,
+                      color: "#FFFFFF",
+                      borderColor: "#FFFFFF",
+                      "&:hover": {
+                        borderColor: "#FFFFFF",
+                      },
+                    }}
+                    disabled={
+                      payment === false || editData === false ? true : false
+                    }
+                  >
+                    <PaletteRoundedIcon />
+                    Cor
+                  </Button>
+
+                  <Dialog
+                    disableEscapeKeyDown
+                    open={openColor}
+                    onClose={handleCloseColor}
+                  >
+                    <DialogTitle>Selecione a cor secundaria</DialogTitle>
+                    <DialogContent
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
                     >
-                      Cancelar
-                    </Button>
-                    <Button onClick={handleAddProduct} color="primary">
-                      Salvar produto
-                    </Button>
-                  </DialogActions>
-                </Dialog>
+                      <BlockPicker
+                        color={color}
+                        onChange={(newColor) => setColor(newColor.hex)}
+                      />
+                    </DialogContent>
+
+                    <DialogActions>
+                      <Button onClick={() => setOpenColor(false)}>
+                        Voltar
+                      </Button>
+                      <Button onClick={handleSaveColor}>Salvar</Button>
+                    </DialogActions>
+                  </Dialog>
+                </Box>
               </Box>
             </Box>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "flex-end",
-                width: "95%",
-              }}
-            >
-              <Button onClick={handleEditNameAndPhone} variant="outlined">
-                Salvar
-              </Button>
-            </Box>
+            {editData === true && (
+              <>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "flex-end",
+                    width: "95%",
+                  }}
+                >
+                  <Button
+                    onClick={handleEditNameAndPhone}
+                    sx={{
+                      color: "#FFFFFF",
+                      borderColor: "#FFFFFF",
+                      "&:hover": {
+                        borderColor: "#FFFFFF",
+                      },
+                    }}
+                    variant="outlined"
+                  >
+                    Salvar
+                  </Button>
+                </Box>
+              </>
+            )}
           </Box>
 
           <Box
@@ -964,8 +1027,8 @@ export default function Register() {
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "flex-start",
-              width: "95%",
-              height: "14rem",
+              width: "95dvw",
+              maxHeight: "14rem",
               background: "#1E2C39",
               borderRadius: 3,
               pt: 1,
@@ -981,40 +1044,61 @@ export default function Register() {
                 justifyContent: "space-between",
                 width: "95%",
                 borderBottom: "1px #FFFFFF solid",
+                pb: 1,
               }}
             >
               <Typography color={"#FFFFFF"}>Categoria</Typography>
               <AddRoundedIcon
-                style={{ color: "#FFFFFF" }}
+                titleAccess="Adicionar categoria"
+                style={{ color: "#FFFFFF", cursor: "pointer" }}
                 onClick={() => setCreateCategory(true)}
               />
             </Box>
             <Box
               sx={{
-                pt: "1rem",
-                overflow: "auto",
+                pt: "0.8rem",
+                pb: "0.8rem",
+                overflowX: edit === true ? "hidden" : "scroll",
                 display: "flex",
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "flex-start",
-                flexWrap: "wrap",
+                flexWrap: "nowrap",
                 width: "95%",
               }}
             >
               {createCategory === true && edit === false ? (
                 <>
-                  <OutlinedInput
-                    value={editedCategoryName}
-                    onChange={(e) => setEditedCategoryName(e.target.value)}
-                  />
-                  <Button
-                    variant="outlined"
-                    sx={{ color: "#FFFFFF", borderColor: "#FFFFFF" }}
-                    onClick={() => handleSave()}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      flexWrap: "wrap",
+                      width: "95%",
+                    }}
                   >
-                    Adicionar
-                    <CheckRoundedIcon />
-                  </Button>
+                    <OutlinedInput
+                      placeholder="Digite a categoria"
+                      sx={{
+                        color: "#FFFFFF",
+                        "& fieldset": {
+                          borderColor: "#FFFFFF",
+                        },
+                      }}
+                      value={editedCategoryName}
+                      onChange={(e) => setEditedCategoryName(e.target.value)}
+                    />
+                    <Button
+                      variant="outlined"
+                      sx={{ color: "#FFFFFF", borderColor: "#FFFFFF" }}
+                      onClick={() => handleSave()}
+                    >
+                      Adicionar
+                      <CheckRoundedIcon />
+                    </Button>
+                  </Box>
                 </>
               ) : (
                 <>
@@ -1059,27 +1143,42 @@ export default function Register() {
                     })}
                 </>
               )}
-              {edit === true ? (
-                <>
-                  <>
-                    <OutlinedInput
-                      value={editedCategoryNewName}
-                      onChange={(e) => setEditedCategoryNewName(e.target.value)}
-                    />
-                    <Button
-                      variant="outlined"
-                      sx={{ color: "#FFFFFF", borderColor: "#FFFFFF" }}
-                      onClick={() => handleEditSave()}
-                    >
-                      Alterar
-                      <CheckRoundedIcon />
-                    </Button>
-                  </>
-                </>
-              ) : (
-                <></>
-              )}
             </Box>
+            {edit === true ? (
+              <>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    flexWrap: "wrap",
+                    width: "95%",
+                  }}
+                >
+                  <OutlinedInput
+                    sx={{
+                      color: "#FFFFFF",
+                      "& fieldset": {
+                        borderColor: "#FFFFFF",
+                      },
+                    }}
+                    value={editedCategoryNewName}
+                    onChange={(e) => setEditedCategoryNewName(e.target.value)}
+                  />
+                  <Button
+                    variant="outlined"
+                    sx={{ color: "#FFFFFF", borderColor: "#FFFFFF" }}
+                    onClick={() => handleEditSave()}
+                  >
+                    Alterar
+                    <CheckRoundedIcon />
+                  </Button>
+                </Box>
+              </>
+            ) : (
+              <></>
+            )}
           </Box>
           <Box
             sx={{
@@ -1087,7 +1186,7 @@ export default function Register() {
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "flex-start",
-              width: "95%",
+              width: "95dvw",
               height: "auto",
               background: "#1E2C39",
               borderRadius: 3,
