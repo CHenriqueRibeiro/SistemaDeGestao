@@ -37,9 +37,11 @@ export const BusinessProvider = ({ children }) => {
 
     const formOfPayment = onValue(formPayment, (snapshot) => {
       const formPaymentFromDB = snapshot.val();
-      const formPaymentArray = formPaymentFromDB.map((payment) => ({
-        forma: payment,
-      }));
+      const formPaymentArray = formPaymentFromDB.selectedPayments.map(
+        (payment) => ({
+          forma: payment,
+        })
+      );
       setPayment(formPaymentArray);
       setDataLoaded(true);
     });
@@ -50,7 +52,6 @@ export const BusinessProvider = ({ children }) => {
         const establishmentDataFromDB = snapshot.val();
         setEstablishmentData(establishmentDataFromDB);
         setDataLoaded(true);
-        console.log(establishmentDataFromDB);
       }
     );
 

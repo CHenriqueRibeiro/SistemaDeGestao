@@ -33,6 +33,7 @@ import {
   child,
   update,
 } from "firebase/database";
+import InputMask from "react-input-mask";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import EditRoundedIcon from "@mui/icons-material/EditRounded";
@@ -343,12 +344,15 @@ export default function Register() {
     const db = getDatabase();
     try {
       const paymentOptionsRef = ref(db, "formaDePagamentos");
-      await set(paymentOptionsRef, selectedPayments);
+      await set(paymentOptionsRef, {
+        selectedPayments: selectedPayments.selectedPayments,
+      });
       setOpenPayment(false);
     } catch (error) {
       console.error("Erro ao salvar as formas de pagamento:", error);
     }
   };
+
   const handleSaveColor = () => {
     setColor(color);
 
@@ -511,7 +515,6 @@ export default function Register() {
 
     update(localRef, updates)
       .then(() => {
-        console.log("Dados atualizados com sucesso!");
         setEditData(false);
       })
       .catch((error) => {
@@ -666,16 +669,24 @@ export default function Register() {
                     payment === false || editData === false ? true : false
                   }
                 />
-                <OutlinedInput
+                <InputMask
+                  style={{
+                    textTransform: "capitalize",
+                    border: `1px solid #FFFFFF`,
+                    height: "3.5em",
+                    background: "transparent",
+                    borderRadius: 4,
+                    paddingLeft: 6,
+                    fontFamily: "Roboto",
+                    fontWeight: "500",
+                    fontSize: 16,
+                    color: "#FFFFFF",
+                  }}
+                  mask="(99) 9 99999999"
+                  maskChar={null}
                   placeholder="Telefone"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  sx={{
-                    color: "#FFFFFF",
-                    "& fieldset": {
-                      borderColor: "#FFFFFF",
-                    },
-                  }}
                   disabled={
                     payment === false || editData === false ? true : false
                   }
@@ -825,8 +836,13 @@ export default function Register() {
                           labelId="payment-select-label"
                           id="payment-select"
                           multiple
-                          value={selectedPayments}
-                          onChange={(e) => setSelectedPayments(e.target.value)}
+                          value={selectedPayments.selectedPayments || []} // Verifica se é um array, se não for, define como um array vazio
+                          onChange={(e) =>
+                            setSelectedPayments({
+                              ...selectedPayments,
+                              selectedPayments: e.target.value,
+                            })
+                          }
                           renderValue={(selected) => (
                             <Box sx={{ display: "flex", flexWrap: "wrap" }}>
                               {selected.map((payment) => (

@@ -51,16 +51,10 @@ export default function Header() {
 
   const singnOut = () => {
     const auth = getAuth(app);
-    auth.signOut().then(
-      () => {
-        localStorage.clear();
-        navigate("/admin");
-        console.log("signed out");
-      },
-      (error) => {
-        console.log(error, "error");
-      }
-    );
+    auth.signOut().then(() => {
+      localStorage.clear();
+      navigate("/admin");
+    });
   };
 
   return (
