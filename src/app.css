@@ -2,18 +2,19 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: "Hanken Grotesk", sans-serif !important;
 }
 #root {
   display: flex;
   justify-content: center;
   height: 100dvh;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   overflow: hidden;
   position: relative;
 }
 
 #app {
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   margin: 0 auto;
   display: flex;
   flex-flow: column nowrap;
@@ -26,13 +27,13 @@
 }
 
 #content {
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   width: 100%;
   height: 67%;
   overflow: hidden !important;
 }
-.backgroundAdmin{
-  background-color: #ECEDEE;
+.backgroundAdmin {
+  background-color: #ecedee;
 }
 
 #footer {
